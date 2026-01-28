@@ -1,6 +1,6 @@
 import { mockClient } from 'aws-sdk-client-mock';
-import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
-import { listSessions, getTranscript, listSubagents, getSubagentTranscript } from '../../src/services/s3Service';
+import { S3Client, ListObjectsV2Command, GetObjectCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
+import { listSessions, getTranscript, listSubagents, getSubagentTranscript, testBucketAccess } from '../../src/services/s3Service';
 
 const s3Mock = mockClient(S3Client);
 
@@ -324,6 +324,122 @@ describe('S3 Service', () => {
 
       // Assert
       expect(capturedKey).toBe('my-session/subagents/agent-agent-xyz.jsonl');
+    });
+  });
+
+  describe('testBucketAccess', () => {
+    it('should return true when bucket access is successful', async () => {
+      // Arrange
+      s3Mock.on(HeadBucketCommand).resolves({});
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(true);
+    });
+
+    it('should return false when bucket does not exist', async () => {
+      // Arrange
+      const notFoundError = new Error('NotFound');
+      notFoundError.name = 'NotFound';
+      s3Mock.on(HeadBucketCommand).rejects(notFoundError);
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when access is forbidden', async () => {
+      // Arrange
+      const forbiddenError = new Error('Forbidden');
+      forbiddenError.name = 'Forbidden';
+      s3Mock.on(HeadBucketCommand).rejects(forbiddenError);
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when access is denied', async () => {
+      // Arrange
+      const accessDeniedError = new Error('AccessDenied');
+      accessDeniedError.name = 'AccessDenied';
+      s3Mock.on(HeadBucketCommand).rejects(accessDeniedError);
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false when TRANSCRIPT_BUCKET is empty string', async () => {
+      // Arrange
+      const originalBucket = process.env.TRANSCRIPT_BUCKET;
+      process.env.TRANSCRIPT_BUCKET = '';
+
+      // Import after changing environment variable
+      jest.resetModules();
+      const { testBucketAccess: testFunc } = await import('../../src/services/s3Service');
+
+      // Act
+      const result = await testFunc();
+
+      // Assert
+      expect(result).toBe(false);
+
+      // Cleanup
+      process.env.TRANSCRIPT_BUCKET = originalBucket;
+    });
+
+    it('should return false when TRANSCRIPT_BUCKET is undefined', async () => {
+      // Arrange
+      const originalBucket = process.env.TRANSCRIPT_BUCKET;
+      delete process.env.TRANSCRIPT_BUCKET;
+
+      // Import after changing environment variable
+      jest.resetModules();
+      const { testBucketAccess: testFunc } = await import('../../src/services/s3Service');
+
+      // Act
+      const result = await testFunc();
+
+      // Assert
+      expect(result).toBe(false);
+
+      // Cleanup
+      process.env.TRANSCRIPT_BUCKET = originalBucket;
+    });
+
+    it('should return false on network error', async () => {
+      // Arrange
+      const networkError = new Error('Network error');
+      networkError.name = 'NetworkError';
+      s3Mock.on(HeadBucketCommand).rejects(networkError);
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(false);
+    });
+
+    it('should return false on timeout error', async () => {
+      // Arrange
+      const timeoutError = new Error('Request timeout');
+      timeoutError.name = 'TimeoutError';
+      s3Mock.on(HeadBucketCommand).rejects(timeoutError);
+
+      // Act
+      const result = await testBucketAccess();
+
+      // Assert
+      expect(result).toBe(false);
     });
   });
 });

@@ -2,6 +2,7 @@ import {
   S3Client,
   ListObjectsV2Command,
   GetObjectCommand,
+  HeadBucketCommand,
   ListObjectsV2CommandOutput,
 } from '@aws-sdk/client-s3';
 import { Session } from '../types/transcript';
@@ -81,6 +82,22 @@ export async function getSubagentTranscript(
 ): Promise<string> {
   const key = `${sessionId}/subagents/agent-${agentId}.jsonl`;
   return getTranscript(key);
+}
+
+export async function testBucketAccess(): Promise<boolean> {
+  if (!BUCKET_NAME) {
+    return false;
+  }
+
+  try {
+    const command = new HeadBucketCommand({
+      Bucket: BUCKET_NAME,
+    });
+    await s3Client.send(command);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export { s3Client };
