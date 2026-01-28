@@ -68,6 +68,33 @@ describe('Transcript API Endpoints', () => {
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('error');
     });
+
+    it('should handle S3 AccessDenied error', async () => {
+      // Arrange
+      const accessDeniedError = new Error('Access Denied');
+      (accessDeniedError as Error & { name: string }).name = 'AccessDenied';
+      mockedS3Service.listSessions.mockRejectedValue(accessDeniedError);
+
+      // Act
+      const response = await request(app).get('/api/sessions');
+
+      // Assert
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe('InternalServerError');
+    });
+
+    it('should use S3 metadata status code when available', async () => {
+      // Arrange
+      const s3Error = new Error('S3 error with metadata');
+      (s3Error as any).$metadata = { httpStatusCode: 503 };
+      mockedS3Service.listSessions.mockRejectedValue(s3Error);
+
+      // Act
+      const response = await request(app).get('/api/sessions');
+
+      // Assert
+      expect(response.status).toBe(503);
+    });
   });
 
   describe('GET /api/transcripts/:sessionId', () => {
