@@ -129,7 +129,7 @@ describe('Transcript API Endpoints', () => {
 
     it('should return 400 for invalid session ID format', async () => {
       // Act
-      const response = await request(app).get('/api/transcripts/../etc/passwd');
+      const response = await request(app).get('/api/transcripts/session%2f..%2fetc');
 
       // Assert
       expect(response.status).toBe(400);
@@ -193,7 +193,7 @@ describe('Transcript API Endpoints', () => {
 
     it('should return 400 for invalid session ID', async () => {
       // Act
-      const response = await request(app).get('/api/transcripts/../hack/subagents');
+      const response = await request(app).get('/api/transcripts/session%2fhack/subagents');
 
       // Assert
       expect(response.status).toBe(400);
@@ -257,7 +257,7 @@ describe('Transcript API Endpoints', () => {
 
     it('should return 400 for invalid session ID', async () => {
       // Act
-      const response = await request(app).get('/api/transcripts/../hack/subagents/agent1');
+      const response = await request(app).get('/api/transcripts/session..test/subagents/agent1');
 
       // Assert
       expect(response.status).toBe(400);
@@ -265,7 +265,7 @@ describe('Transcript API Endpoints', () => {
 
     it('should return 400 for invalid agent ID', async () => {
       // Act
-      const response = await request(app).get('/api/transcripts/session123/subagents/../passwd');
+      const response = await request(app).get('/api/transcripts/session123/subagents/agent%2f..test');
 
       // Assert
       expect(response.status).toBe(400);
