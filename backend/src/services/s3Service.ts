@@ -34,6 +34,20 @@ export async function listSessions(): Promise<Session[]> {
     }
   }
 
+  // Sort by lastModified in descending order (newest first)
+  // Sessions with undefined/empty lastModified are placed at the end
+  sessions.sort((a, b) => {
+    // Handle empty lastModified (should be at the end)
+    if (!a.lastModified && !b.lastModified) return 0;
+    if (!a.lastModified) return 1;
+    if (!b.lastModified) return -1;
+
+    // Parse dates and compare (descending order)
+    const dateA = new Date(a.lastModified).getTime();
+    const dateB = new Date(b.lastModified).getTime();
+    return dateB - dateA;
+  });
+
   return sessions;
 }
 
