@@ -123,7 +123,7 @@ describe('MessageBubble Component', () => {
 
     it('should render long text content', () => {
       // Arrange
-      const longContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(10);
+      const longContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(10).trim();
       const props = {
         type: 'assistant' as const,
         content: longContent,
@@ -326,9 +326,11 @@ describe('MessageBubble Component', () => {
 
       // Act
       render(<MessageBubble {...props} />);
+      const messageElement = screen.getByTestId('message-bubble');
 
       // Assert
-      expect(screen.getByText(new RegExp(specialContent.substring(0, 20)))).toBeInTheDocument();
+      expect(messageElement.textContent).toContain('Hello!');
+      expect(messageElement.textContent).toContain('@#$%^&*()');
     });
 
     it('should handle multiline content', () => {
