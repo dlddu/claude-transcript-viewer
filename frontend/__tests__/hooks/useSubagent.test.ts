@@ -680,7 +680,7 @@ describe('useSubagent hook', () => {
                     records: [],
                   }),
                 }),
-              50
+              500
             )
           )
       );
