@@ -15,7 +15,6 @@ jest.mock('@aws-sdk/client-s3', () => ({
 
 import request from 'supertest';
 import { app } from '../src/app';
-import { Readable } from 'stream';
 
 describe('Transcripts API Endpoint', () => {
   beforeEach(() => {
@@ -30,10 +29,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'test-session-123';
       const mockJsonl = '{"type":"request","message":{"role":"user","content":"Hello"},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -47,10 +47,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'test-session-123';
       const mockJsonl = '{"type":"request","message":{"role":"user","content":"Hello"},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -64,10 +65,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'test-session-123';
       const mockJsonl = '{"type":"request","message":{"role":"user","content":"Hello"},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -89,10 +91,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: '2026-01-29T10:00:00Z',
       };
       const mockJsonl = JSON.stringify(mockRecord);
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -118,10 +121,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: '2026-01-29T10:00:01Z',
       };
       const mockJsonl = `${JSON.stringify(mockRecord1)}\n${JSON.stringify(mockRecord2)}`;
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -137,10 +141,11 @@ describe('Transcripts API Endpoint', () => {
     it('should handle empty JSONL file', async () => {
       // Arrange
       const sessionId = 'empty-session';
-      const stream = Readable.from(['']);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(''),
+        },
       });
 
       // Act
@@ -241,10 +246,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'test-session-123';
       const mockJsonl = '{"type":"request","message":{},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -271,10 +277,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: '2026-01-29T10:00:01Z',
       };
       const mockJsonl = `${JSON.stringify(mockRecord1)}\n\n${JSON.stringify(mockRecord2)}\n`;
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -296,10 +303,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: `2026-01-29T10:00:${String(i).padStart(2, '0')}Z`,
       }));
       const mockJsonl = mockRecords.map((r) => JSON.stringify(r)).join('\n');
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -327,10 +335,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: '2026-01-29T10:00:00Z',
       };
       const mockJsonl = JSON.stringify(mockRecord);
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -351,10 +360,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'session-with-dashes_and_underscores.123';
       const mockJsonl = '{"type":"request","message":{},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -397,10 +407,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'test-session';
       const mockJsonl = '{"type":"request","message":{},"timestamp":"2026-01-29T10:00:00Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -431,10 +442,11 @@ describe('Transcripts API Endpoint', () => {
       // Arrange
       const sessionId = 'invalid-json-session';
       const mockJsonl = '{"type":"request","message":{},"timestamp":"2026-01-29T10:00:00Z"}\n{invalid json}\n{"type":"response","message":{},"timestamp":"2026-01-29T10:00:01Z"}';
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
@@ -458,10 +470,14 @@ describe('Transcripts API Endpoint', () => {
 
       mockSend
         .mockResolvedValueOnce({
-          Body: Readable.from([mockJsonl1]),
+          Body: {
+            transformToString: jest.fn().mockResolvedValue(mockJsonl1),
+          },
         })
         .mockResolvedValueOnce({
-          Body: Readable.from([mockJsonl2]),
+          Body: {
+            transformToString: jest.fn().mockResolvedValue(mockJsonl2),
+          },
         });
 
       // Act
@@ -489,10 +505,11 @@ describe('Transcripts API Endpoint', () => {
         timestamp: '2026-01-29T10:00:00Z',
       };
       const mockJsonl = JSON.stringify(mockRecord);
-      const stream = Readable.from([mockJsonl]);
 
       mockSend.mockResolvedValue({
-        Body: stream,
+        Body: {
+          transformToString: jest.fn().mockResolvedValue(mockJsonl),
+        },
       });
 
       // Act
