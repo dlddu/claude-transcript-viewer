@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import { sessionsRouter } from './routes/sessions';
 
 export const app = express();
 
@@ -14,5 +15,8 @@ app.get('/health', (_req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// API routes
+app.use('/api', sessionsRouter);
 
 export default app;

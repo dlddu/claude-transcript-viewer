@@ -1,3 +1,18 @@
+// Mock @aws-sdk/client-s3 before any imports
+const mockSend = jest.fn();
+const MockS3Client = jest.fn().mockImplementation(() => ({
+  send: mockSend,
+  config: {
+    region: jest.fn().mockResolvedValue('ap-northeast-2'),
+  },
+}));
+
+jest.mock('@aws-sdk/client-s3', () => ({
+  S3Client: MockS3Client,
+  ListObjectsV2Command: jest.fn(),
+  HeadBucketCommand: jest.fn(),
+}));
+
 import request from 'supertest';
 import { app } from '../src/app';
 
