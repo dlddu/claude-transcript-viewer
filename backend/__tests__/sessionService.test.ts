@@ -14,27 +14,14 @@ jest.mock('@aws-sdk/client-s3', () => ({
   HeadBucketCommand: jest.fn(),
 }));
 
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { listSessions } from '../src/services/sessionService';
 
 describe('Session Service', () => {
-  let originalEnv: NodeJS.ProcessEnv;
-
   beforeEach(() => {
-    // Save original environment
-    originalEnv = { ...process.env };
-    process.env.TRANSCRIPT_BUCKET = 'test-bucket';
-    process.env.AWS_REGION = 'ap-northeast-2';
-
     // Reset mocks
     mockSend.mockReset();
     MockS3Client.mockClear();
     MockListObjectsV2Command.mockClear();
-    jest.resetModules();
-  });
-
-  afterEach(() => {
-    // Restore original environment
-    process.env = originalEnv;
   });
 
   describe('listSessions', () => {
@@ -43,8 +30,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -67,8 +53,7 @@ describe('Session Service', () => {
           { Key: 'def456.jsonl', LastModified: mockDate2 },
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -92,8 +77,7 @@ describe('Session Service', () => {
           { Key: 'middle.jsonl', LastModified: middleDate },
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -117,8 +101,7 @@ describe('Session Service', () => {
           { Key: 'session2.jsonl', LastModified: mockDate },
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -141,8 +124,7 @@ describe('Session Service', () => {
           { Key: 'backup/session2.jsonl', LastModified: mockDate },
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -159,8 +141,7 @@ describe('Session Service', () => {
           { Key: 'session2.jsonl' }, // Missing LastModified
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -177,8 +158,7 @@ describe('Session Service', () => {
           { LastModified: new Date('2026-01-27T10:00:00Z') }, // Missing Key
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -191,8 +171,7 @@ describe('Session Service', () => {
       // Arrange
       const mockError = new Error('S3 service unavailable');
       mockSend.mockRejectedValue(mockError);
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act & Assert
       await expect(listSessions()).rejects.toThrow('S3 service unavailable');
     });
@@ -206,8 +185,7 @@ describe('Session Service', () => {
           httpStatusCode: 403,
         },
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act & Assert
       await expect(listSessions()).rejects.toMatchObject({
         name: 'AccessDenied',
@@ -223,8 +201,7 @@ describe('Session Service', () => {
           httpStatusCode: 404,
         },
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act & Assert
       await expect(listSessions()).rejects.toMatchObject({
         name: 'NoSuchBucket',
@@ -236,8 +213,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       await listSessions();
 
@@ -254,8 +230,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         // No Contents field
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -268,8 +243,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: null,
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -289,8 +263,7 @@ describe('Session Service', () => {
           { Key: 'with.dots.jsonl', LastModified: mockDate },
         ],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -312,8 +285,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [{ Key: `${longId}.jsonl`, LastModified: mockDate }],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -329,8 +301,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [{ Key: 'session.jsonl', LastModified: mockDate }],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -345,8 +316,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 
@@ -364,8 +334,7 @@ describe('Session Service', () => {
       mockSend.mockResolvedValue({
         Contents: [{ Key: 'session.jsonl', LastModified: mockDate }],
       });
-      const { listSessions } = await import('../src/services/sessionService');
-
+      
       // Act
       const result = await listSessions();
 

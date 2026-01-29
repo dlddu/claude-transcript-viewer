@@ -18,24 +18,11 @@ import request from 'supertest';
 import { app } from '../src/app';
 
 describe('Sessions API Endpoint', () => {
-  let originalEnv: NodeJS.ProcessEnv;
-
   beforeEach(() => {
-    // Save original environment
-    originalEnv = { ...process.env };
-    process.env.TRANSCRIPT_BUCKET = 'test-bucket';
-    process.env.AWS_REGION = 'ap-northeast-2';
-
     // Reset mocks
     mockSend.mockReset();
     MockS3Client.mockClear();
     MockListObjectsV2Command.mockClear();
-    jest.resetModules();
-  });
-
-  afterEach(() => {
-    // Restore original environment
-    process.env = originalEnv;
   });
 
   describe('GET /api/sessions', () => {

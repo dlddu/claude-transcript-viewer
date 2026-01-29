@@ -33,6 +33,9 @@ jobs:
         run: npm run typecheck
 
       - name: Run tests
+        env:
+          TRANSCRIPT_BUCKET: test-bucket
+          AWS_REGION: ap-northeast-2
         run: npm test -- --coverage
 
       - name: Upload coverage reports
