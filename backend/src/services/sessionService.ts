@@ -1,9 +1,16 @@
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client, BUCKET_NAME } from './s3Client';
 
 export interface Session {
   id: string;
   lastModified: string;
+}
+
+export interface TranscriptRecord {
+  type: string;
+  message: any;
+  timestamp: string;
+  [key: string]: any;
 }
 
 /**
@@ -58,4 +65,50 @@ export async function listSessions(): Promise<Session[]> {
     });
 
   return sessions;
+}
+
+/**
+ * Get transcript records for a specific session
+ * @param sessionId - The session ID
+ * @returns Promise<TranscriptRecord[]> - Array of transcript records
+ */
+export async function getTranscript(sessionId: string): Promise<TranscriptRecord[]> {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: `${sessionId}.jsonl`,
+  });
+
+  const response = await s3Client.send(command);
+
+  // Convert stream to string
+  if (!response.Body) {
+    return [];
+  }
+
+  const bodyString = await response.Body.transformToString();
+
+  // Parse JSONL (line by line)
+  if (!bodyString || bodyString.trim() === '') {
+    return [];
+  }
+
+  const lines = bodyString.split('\n');
+  const records: TranscriptRecord[] = [];
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (trimmedLine === '') {
+      continue; // Skip empty lines
+    }
+
+    try {
+      const record = JSON.parse(trimmedLine);
+      records.push(record);
+    } catch (error) {
+      // If a line fails to parse, throw an error
+      throw new Error(`Failed to parse JSON line: ${trimmedLine}`);
+    }
+  }
+
+  return records;
 }
