@@ -38,9 +38,8 @@ function StatsSummary({ records }: StatsSummaryProps) {
       // Determine if this call was successful
       // Success: has toolResult AND is_error is not true
       // Failure: has toolResult AND is_error is true OR no toolResult
-      const hasResult = match.toolResult !== null;
-      const isSuccess = hasResult && match.toolResult.is_error !== true;
-      const isFailure = (hasResult && match.toolResult.is_error === true) || !hasResult;
+      const isSuccess = match.toolResult !== null && match.toolResult.is_error !== true;
+      const isFailure = match.toolResult === null || match.toolResult.is_error === true;
 
       if (isSuccess) {
         successCount++;
@@ -109,25 +108,25 @@ function StatsSummary({ records }: StatsSummaryProps) {
         {/* Total Calls Card */}
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-1">Total Calls</h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.totalCalls}</p>
+          <p className="text-3xl font-bold text-gray-900" data-testid="total-calls-value">{stats.totalCalls}</p>
         </div>
 
         {/* Success Card */}
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-1">Success</h3>
-          <p className="text-3xl font-bold text-green-600">{stats.successCount}</p>
+          <p className="text-3xl font-bold text-green-600" data-testid="success-count-value">{stats.successCount}</p>
         </div>
 
         {/* Failure Card */}
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-1">Failed</h3>
-          <p className="text-3xl font-bold text-red-600">{stats.failureCount}</p>
+          <p className="text-3xl font-bold text-red-600" data-testid="failure-count-value">{stats.failureCount}</p>
         </div>
 
         {/* Success Rate Card */}
         <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500 mb-1">Success Rate</h3>
-          <p className={`text-3xl font-bold ${getSuccessRateColor()}`}>
+          <p className={`text-3xl font-bold ${getSuccessRateColor()}`} data-testid="success-rate-value">
             {stats.successRate.toFixed(1)}%
           </p>
         </div>
