@@ -405,8 +405,11 @@ describe('useSubagent hook', () => {
       await waitFor(() => {
         expect(result.current.subagent?.records).toHaveLength(2);
         expect(
-          (result.current.subagent?.records[0] as Record<string, any>)?.message
-            ?.content
+          (
+            result.current.subagent?.records[0] as {
+              message?: { content?: unknown[] };
+            }
+          )?.message?.content
         ).toHaveLength(2);
       });
     });
