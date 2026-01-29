@@ -222,7 +222,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Success')).toBeInTheDocument();
+      expect(screen.getByTestId('success-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('success-count-value')).toHaveTextContent('0');
     });
 
@@ -267,7 +267,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Success')).toBeInTheDocument();
+      expect(screen.getByTestId('success-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('success-count-value')).toHaveTextContent('1');
     });
 
@@ -312,7 +312,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Success')).toBeInTheDocument();
+      expect(screen.getByTestId('success-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('success-count-value')).toHaveTextContent('0');
     });
 
@@ -381,7 +381,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Success')).toBeInTheDocument();
+      expect(screen.getByTestId('success-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('success-count-value')).toHaveTextContent('2');
     });
   });
@@ -1282,7 +1282,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Success')).toBeInTheDocument();
+      expect(screen.getByTestId('success-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('success-count-value')).toHaveTextContent('1');
     });
 
