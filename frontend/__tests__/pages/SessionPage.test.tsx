@@ -1,34 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import SessionPage from '../../src/pages/SessionPage';
 
 describe('SessionPage Component', () => {
-  const renderWithRouter = (sessionId: string) => {
-    return render(
-      <BrowserRouter>
-        <Routes>
-          <Route path="/session/:sessionId" element={<SessionPage />} />
-        </Routes>
-      </BrowserRouter>,
-      {
-        wrapper: ({ children }) => (
-          <BrowserRouter>
-            {children}
-          </BrowserRouter>
-        ),
-      }
-    );
-  };
 
   it('should render without crashing', () => {
     // Arrange & Act
     const { container } = render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
@@ -41,15 +25,15 @@ describe('SessionPage Component', () => {
 
     // Act
     render(
-      <BrowserRouter initialEntries={[`/session/${testSessionId}`]}>
+      <MemoryRouter initialEntries={[`/session/${testSessionId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    const sessionIdElement = screen.getByText(new RegExp(testSessionId, 'i'));
+    const sessionIdElement = screen.getByRole('heading', { name: new RegExp(testSessionId, 'i') });
     expect(sessionIdElement).toBeInTheDocument();
   });
 
@@ -59,15 +43,15 @@ describe('SessionPage Component', () => {
 
     // Act
     render(
-      <BrowserRouter initialEntries={[`/session/${sessionId}`]}>
+      <MemoryRouter initialEntries={[`/session/${sessionId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(sessionId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId) })).toBeInTheDocument();
   });
 
   it('should handle different session IDs', () => {
@@ -75,31 +59,34 @@ describe('SessionPage Component', () => {
     const sessionId1 = 'session-001';
 
     // Act
-    const { rerender } = render(
-      <BrowserRouter initialEntries={[`/session/${sessionId1}`]}>
+    const { unmount } = render(
+      <MemoryRouter initialEntries={[`/session/${sessionId1}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(sessionId1))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId1) })).toBeInTheDocument();
+
+    // Cleanup
+    unmount();
 
     // Arrange
     const sessionId2 = 'session-002';
 
     // Act
-    rerender(
-      <BrowserRouter initialEntries={[`/session/${sessionId2}`]}>
+    render(
+      <MemoryRouter initialEntries={[`/session/${sessionId2}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(sessionId2))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId2) })).toBeInTheDocument();
   });
 
   it('should render session page heading', () => {
@@ -108,11 +95,11 @@ describe('SessionPage Component', () => {
 
     // Act
     render(
-      <BrowserRouter initialEntries={[`/session/${sessionId}`]}>
+      <MemoryRouter initialEntries={[`/session/${sessionId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
@@ -126,11 +113,11 @@ describe('SessionPage Component', () => {
 
     // Act
     const { container } = render(
-      <BrowserRouter initialEntries={[`/session/${sessionId}`]}>
+      <MemoryRouter initialEntries={[`/session/${sessionId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
@@ -143,15 +130,15 @@ describe('SessionPage Component', () => {
 
     // Act
     render(
-      <BrowserRouter initialEntries={[`/session/${uuidSessionId}`]}>
+      <MemoryRouter initialEntries={[`/session/${uuidSessionId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(uuidSessionId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(uuidSessionId) })).toBeInTheDocument();
   });
 
   it('should handle alphanumeric session IDs', () => {
@@ -160,14 +147,14 @@ describe('SessionPage Component', () => {
 
     // Act
     render(
-      <BrowserRouter initialEntries={[`/session/${alphanumericId}`]}>
+      <MemoryRouter initialEntries={[`/session/${alphanumericId}`]}>
         <Routes>
           <Route path="/session/:sessionId" element={<SessionPage />} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(alphanumericId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(alphanumericId) })).toBeInTheDocument();
   });
 });

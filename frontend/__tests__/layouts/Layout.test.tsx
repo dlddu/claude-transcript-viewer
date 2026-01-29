@@ -92,7 +92,7 @@ describe('Layout Component', () => {
 
   it('should render Outlet when no children provided', () => {
     // Arrange & Act
-    const { container } = render(
+    render(
       <BrowserRouter>
         <Layout />
       </BrowserRouter>
@@ -129,6 +129,6 @@ describe('Layout Component', () => {
     );
 
     // Assert
-    expect(container.firstChild).toHaveClass();
+    expect(container.firstChild).toHaveClass('min-h-screen');
   });
 });

@@ -38,7 +38,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert
-    expect(screen.getByText(new RegExp(sessionId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId) })).toBeInTheDocument();
   });
 
   it('should display Layout header on all routes', () => {
@@ -54,7 +54,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert
-    expect(screen.getByText(/claude transcript viewer/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /claude transcript viewer/i })).toBeInTheDocument();
 
     // Act - Session page
     rerender(
@@ -68,7 +68,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert
-    expect(screen.getByText(/claude transcript viewer/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /claude transcript viewer/i })).toBeInTheDocument();
   });
 
   it('should render HomePage component when navigating to "/"', () => {
@@ -105,7 +105,7 @@ describe('Routing Integration', () => {
       );
 
       // Assert
-      expect(screen.getByText(new RegExp(sessionId))).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: new RegExp(sessionId) })).toBeInTheDocument();
 
       // Cleanup
       unmount();
@@ -114,7 +114,7 @@ describe('Routing Integration', () => {
 
   it('should maintain Layout structure across route changes', () => {
     // Arrange
-    const { container } = render(
+    render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -173,7 +173,7 @@ describe('Routing Integration', () => {
 
   it('should navigate between HomePage and SessionPage', () => {
     // Arrange & Act - Start at HomePage
-    const { rerender } = render(
+    const { unmount } = render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -187,9 +187,12 @@ describe('Routing Integration', () => {
     // Assert - HomePage
     expect(screen.getByText(/home/i)).toBeInTheDocument();
 
-    // Act - Navigate to SessionPage
+    // Cleanup
+    unmount();
+
+    // Arrange & Act - Navigate to SessionPage
     const sessionId = 'test-session';
-    rerender(
+    render(
       <MemoryRouter initialEntries={[`/session/${sessionId}`]}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -201,7 +204,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert - SessionPage
-    expect(screen.getByText(new RegExp(sessionId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId) })).toBeInTheDocument();
   });
 
   it('should preserve Layout elements during navigation', () => {
@@ -209,7 +212,7 @@ describe('Routing Integration', () => {
     const sessionId = 'preserve-test';
 
     // Act
-    const { rerender } = render(
+    const { unmount } = render(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -223,8 +226,11 @@ describe('Routing Integration', () => {
     const headerBefore = screen.getByRole('banner');
     expect(headerBefore).toHaveTextContent('Claude Transcript Viewer');
 
+    // Cleanup
+    unmount();
+
     // Act - Navigate
-    rerender(
+    render(
       <MemoryRouter initialEntries={[`/session/${sessionId}`]}>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -237,6 +243,6 @@ describe('Routing Integration', () => {
     // Assert - After navigation
     const headerAfter = screen.getByRole('banner');
     expect(headerAfter).toHaveTextContent('Claude Transcript Viewer');
-    expect(screen.getByText(new RegExp(sessionId))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: new RegExp(sessionId) })).toBeInTheDocument();
   });
 });
