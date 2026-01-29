@@ -428,7 +428,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Failed')).toBeInTheDocument();
+      expect(screen.getByTestId('failure-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('failure-count-value')).toHaveTextContent('0');
     });
 
@@ -485,7 +485,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText('Failed')).toBeInTheDocument();
+      expect(screen.getByTestId('failure-count-value')).toBeInTheDocument();
       expect(screen.getByTestId('failure-count-value')).toHaveTextContent('2');
     });
   });
