@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { sessionsRouter } from './routes/sessions';
 
 export const app = express();
@@ -18,5 +19,13 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API routes
 app.use('/api', sessionsRouter);
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
 
 export default app;
