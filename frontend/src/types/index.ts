@@ -40,3 +40,17 @@ export interface TranscriptRecord {
   message: Message;
   timestamp: string;
 }
+
+export interface ToolStats {
+  name: string;
+  count: number;
+  errors: number;
+}
+
+export interface TranscriptStats {
+  totalCalls: number;
+  successCount: number;
+  failureCount: number;
+  successRate: number;
+  byTool: ToolStats[];
+}
