@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { get } from '../api/client';
 import type { Session } from '../types';
 
@@ -14,7 +14,7 @@ export function useSessions(): UseSessionsResult {
   const [error, setError] = useState<Error | null>(null);
   const [sessions, setSessions] = useState<Session[] | null>(null);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -26,11 +26,11 @@ export function useSessions(): UseSessionsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [fetchSessions]);
 
   return {
     loading,

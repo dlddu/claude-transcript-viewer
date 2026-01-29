@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { get } from '../api/client';
 import type { TranscriptRecord } from '../types';
 
@@ -14,7 +14,7 @@ export function useTranscript(sessionId: string): UseTranscriptResult {
   const [error, setError] = useState<Error | null>(null);
   const [transcript, setTranscript] = useState<TranscriptRecord[] | null>(null);
 
-  const fetchTranscript = async () => {
+  const fetchTranscript = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -26,11 +26,11 @@ export function useTranscript(sessionId: string): UseTranscriptResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
 
   useEffect(() => {
     fetchTranscript();
-  }, [sessionId]);
+  }, [fetchTranscript]);
 
   return {
     loading,

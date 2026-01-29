@@ -248,7 +248,9 @@ describe('useSessions hook', () => {
 
       const refetchPromise = result.current.refetch();
 
-      expect(result.current.loading).toBe(true);
+      await waitFor(() => {
+        expect(result.current.loading).toBe(true);
+      });
 
       await refetchPromise;
     });

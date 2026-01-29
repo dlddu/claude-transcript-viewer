@@ -187,7 +187,7 @@ describe('useTranscript hook', () => {
 
       await waitFor(() => {
         expect(result.current.transcript).toHaveLength(3);
-        expect(result.current.transcript[1].message.content).toHaveLength(2);
+        expect(result.current.transcript?.[1].message.content).toHaveLength(2);
       });
     });
 
@@ -358,7 +358,9 @@ describe('useTranscript hook', () => {
 
       const refetchPromise = result.current.refetch();
 
-      expect(result.current.loading).toBe(true);
+      await waitFor(() => {
+        expect(result.current.loading).toBe(true);
+      });
 
       await refetchPromise;
     });
