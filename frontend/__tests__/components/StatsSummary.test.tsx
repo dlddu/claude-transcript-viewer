@@ -30,8 +30,9 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText(/total/i)).toBeInTheDocument();
-      expect(screen.getByText(/0/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toBeInTheDocument();
+      expect(totalCallsCard).toHaveTextContent('0');
     });
 
     it('should display zero success count when records is empty', () => {
@@ -44,7 +45,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText(/success/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Successful tool calls')).toBeInTheDocument();
     });
 
     it('should handle 0% success rate when no calls exist', () => {
@@ -57,7 +58,9 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary {...props} />);
 
       // Assert
-      expect(screen.getByText(/0%|0\.0%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toBeInTheDocument();
+      expect(successRateCard).toHaveTextContent(/0\.00%/);
     });
 
     it('should display empty table or message when no tools used', () => {
@@ -116,8 +119,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/total/i)).toBeInTheDocument();
-      expect(screen.getByText(/1/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('1');
     });
 
     it('should count multiple tool calls correctly', () => {
@@ -183,7 +186,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/3/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('3');
     });
 
     it('should count tool calls across multiple assistant messages', () => {
@@ -255,7 +259,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/2/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('2');
     });
 
     it('should not count text blocks as tool calls', () => {
@@ -298,7 +303,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/total.*1/i)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('1');
     });
 
     it('should count tool calls even without matching tool_result', () => {
@@ -331,7 +337,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/2/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('2');
     });
   });
 
@@ -387,8 +394,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success/i)).toBeInTheDocument();
-      expect(screen.getByText(/2/)).toBeInTheDocument();
+      const successCard = screen.getByLabelText('Successful tool calls');
+      expect(successCard).toHaveTextContent('2');
     });
 
     it('should count failed tool calls correctly', () => {
@@ -430,8 +437,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/fail|error/i)).toBeInTheDocument();
-      expect(screen.getByText(/1/)).toBeInTheDocument();
+      const failureCard = screen.getByLabelText('Failed tool calls');
+      expect(failureCard).toHaveTextContent('1');
     });
 
     it('should handle mix of successful and failed tool calls', () => {
@@ -497,8 +504,10 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success.*2/i)).toBeInTheDocument();
-      expect(screen.getByText(/fail.*1/i)).toBeInTheDocument();
+      const successCard = screen.getByLabelText('Successful tool calls');
+      const failureCard = screen.getByLabelText('Failed tool calls');
+      expect(successCard).toHaveTextContent('2');
+      expect(failureCard).toHaveTextContent('1');
     });
 
     it('should treat tool calls without result as neither success nor failure', () => {
@@ -546,8 +555,10 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/total.*2/i)).toBeInTheDocument();
-      expect(screen.getByText(/success.*1/i)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      const successCard = screen.getByLabelText('Successful tool calls');
+      expect(totalCallsCard).toHaveTextContent('2');
+      expect(successCard).toHaveTextContent('1');
     });
 
     it('should treat is_error: false as success', () => {
@@ -589,8 +600,10 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success.*1/i)).toBeInTheDocument();
-      expect(screen.getByText(/fail.*0/i)).toBeInTheDocument();
+      const successCard = screen.getByLabelText('Successful tool calls');
+      const failureCard = screen.getByLabelText('Failed tool calls');
+      expect(successCard).toHaveTextContent('1');
+      expect(failureCard).toHaveTextContent('0');
     });
 
     it('should treat missing is_error field as success', () => {
@@ -632,7 +645,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success.*1/i)).toBeInTheDocument();
+      const successCard = screen.getByLabelText('Successful tool calls');
+      expect(successCard).toHaveTextContent('1');
     });
   });
 
@@ -676,7 +690,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/100%|100\.0%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toHaveTextContent(/100\.00%/);
     });
 
     it('should calculate 0% success rate when all calls fail', () => {
@@ -718,7 +733,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/0%|0\.0%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toHaveTextContent(/0\.00%/);
     });
 
     it('should calculate 50% success rate correctly', () => {
@@ -772,7 +788,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/50%|50\.0%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toHaveTextContent(/50\.00%/);
     });
 
     it('should handle decimal success rates with proper rounding (66.67%)', () => {
@@ -838,7 +855,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/66\.6|66\.7|67/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toHaveTextContent(/66\.67%/);
     });
 
     it('should display success rate as percentage with % symbol', () => {
@@ -880,7 +898,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard.textContent).toMatch(/%/);
     });
 
     it('should handle success rate when only some tools have results', () => {
@@ -928,7 +947,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert - Should calculate based on tools with results only
-      expect(screen.getByText(/100%|100\.0%/)).toBeInTheDocument();
+      const successRateCard = screen.getByLabelText('Success rate');
+      expect(successRateCard).toHaveTextContent(/100\.00%/);
     });
   });
 
@@ -1014,9 +1034,9 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/tool|name/i)).toBeInTheDocument();
-      expect(screen.getByText(/count|calls/i)).toBeInTheDocument();
-      expect(screen.getByText(/error|fail/i)).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /Tool Name/i })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /Calls/i })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /Errors/i })).toBeInTheDocument();
     });
 
     it('should list each tool with its call count', () => {
@@ -1082,10 +1102,16 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
+      const table = screen.getByRole('table');
       expect(screen.getByText('Read')).toBeInTheDocument();
       expect(screen.getByText('Write')).toBeInTheDocument();
-      expect(screen.getByText(/2/)).toBeInTheDocument(); // Read count
-      expect(screen.getByText(/1/)).toBeInTheDocument(); // Write count
+
+      // Check table content more specifically
+      const rows = table.querySelectorAll('tbody tr');
+      const readRow = Array.from(rows).find(row => row.textContent?.includes('Read'));
+      const writeRow = Array.from(rows).find(row => row.textContent?.includes('Write'));
+      expect(readRow?.textContent).toContain('2');
+      expect(writeRow?.textContent).toContain('1');
     });
 
     it('should display error count for each tool', () => {
@@ -1220,8 +1246,12 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
+      const table = screen.getByRole('table');
       expect(screen.getByText('Bash')).toBeInTheDocument();
-      expect(screen.getByText(/3/)).toBeInTheDocument();
+
+      const rows = table.querySelectorAll('tbody tr');
+      const bashRow = Array.from(rows).find(row => row.textContent?.includes('Bash'));
+      expect(bashRow?.textContent).toContain('3');
     });
 
     it('should show zero errors for tools with no errors', () => {
@@ -1330,9 +1360,15 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
+      const table = screen.getByRole('table');
       expect(screen.getByText('Read')).toBeInTheDocument();
-      expect(screen.getByText(/3/)).toBeInTheDocument(); // Total count
-      expect(screen.getByText(/2/)).toBeInTheDocument(); // Error count
+
+      const rows = table.querySelectorAll('tbody tr');
+      const readRow = Array.from(rows).find(row => row.textContent?.includes('Read'));
+      const cells = readRow?.querySelectorAll('td');
+
+      expect(cells?.[1].textContent).toBe('3'); // Total count
+      expect(cells?.[2].textContent).toBe('2'); // Error count
     });
 
     it('should sort tools alphabetically by name', () => {
@@ -1447,7 +1483,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      const heading = screen.getByRole('heading');
+      const heading = screen.getByRole('heading', { name: /Tool Usage Statistics/i });
       expect(heading).toBeInTheDocument();
     });
 
@@ -1492,7 +1528,7 @@ describe('StatsSummary Component', () => {
       // Assert
       expect(container).toBeTruthy();
       expect(screen.getByText(/total/i)).toBeInTheDocument();
-      expect(screen.getByText(/success/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Successful tool calls')).toBeInTheDocument();
       expect(screen.getByText(/%/)).toBeInTheDocument();
     });
 
@@ -1754,7 +1790,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByRole('heading')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Tool Usage Statistics/i })).toBeInTheDocument();
       expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
@@ -1795,7 +1831,7 @@ describe('StatsSummary Component', () => {
 
       // Act
       render(<StatsSummary records={records} />);
-      const heading = screen.getByRole('heading');
+      const heading = screen.getByRole('heading', { name: /Tool Usage Statistics/i });
 
       // Assert
       expect(heading.textContent).toMatch(/stat|summary|tool|overview/i);
@@ -1821,7 +1857,8 @@ describe('StatsSummary Component', () => {
 
       // Assert
       expect(container).toBeTruthy();
-      expect(screen.getByText(/0/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('0');
     });
 
     it('should handle very large number of tool calls', () => {
@@ -1864,7 +1901,8 @@ describe('StatsSummary Component', () => {
 
       // Assert
       expect(container).toBeTruthy();
-      expect(screen.getByText(/100/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('100');
     });
 
     it('should handle tools with special characters in names', () => {
@@ -1956,7 +1994,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/1/)).toBeInTheDocument();
+      const totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('1');
     });
 
     it('should handle tool calls with empty input objects', () => {
@@ -2042,7 +2081,8 @@ describe('StatsSummary Component', () => {
 
       // Assert
       expect(container).toBeTruthy();
-      expect(screen.getByText(/success.*1/i)).toBeInTheDocument();
+      const successCard = screen.getByLabelText('Successful tool calls');
+      expect(successCard).toHaveTextContent('1');
     });
   });
 
@@ -2197,12 +2237,14 @@ describe('StatsSummary Component', () => {
 
       // Act
       const { rerender } = render(<StatsSummary records={initialRecords} />);
-      expect(screen.getByText(/total.*1/i)).toBeInTheDocument();
+      let totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('1');
 
       rerender(<StatsSummary records={expandedRecords} />);
 
       // Assert
-      expect(screen.getByText(/total.*2/i)).toBeInTheDocument();
+      totalCallsCard = screen.getByLabelText('Total tool calls');
+      expect(totalCallsCard).toHaveTextContent('2');
     });
   });
 });

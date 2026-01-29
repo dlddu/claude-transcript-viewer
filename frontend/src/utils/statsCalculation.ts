@@ -1,4 +1,4 @@
-import type { TranscriptRecord, ToolUseBlock, ToolResultBlock, ContentBlock } from '../types';
+import type { TranscriptRecord, ToolUseBlock, ToolResultBlock } from '../types';
 
 export interface ToolStats {
   name: string;
