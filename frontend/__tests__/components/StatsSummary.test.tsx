@@ -147,7 +147,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByTestId('total-calls')).toHaveTextContent('1');
     });
 
     it('should count multiple tool calls correctly', () => {
@@ -276,7 +276,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success.*1|1.*success/i)).toBeInTheDocument();
+      expect(screen.getByTestId('success-count')).toHaveTextContent('1');
     });
 
     it('should count failed tool calls when is_error is true', () => {
@@ -313,7 +313,7 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/fail.*1|error.*1|1.*fail/i)).toBeInTheDocument();
+      expect(screen.getByTestId('failure-count')).toHaveTextContent('1');
     });
 
     it('should count both success and failure correctly', () => {
@@ -364,8 +364,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText(/success.*2|2.*success/i)).toBeInTheDocument();
-      expect(screen.getByText(/fail.*1|error.*1|1.*fail/i)).toBeInTheDocument();
+      expect(screen.getByTestId('success-count')).toHaveTextContent('2');
+      expect(screen.getByTestId('failure-count')).toHaveTextContent('1');
     });
 
     it('should handle tool calls without matching tool_result as pending or unknown', () => {
@@ -403,8 +403,8 @@ describe('StatsSummary Component', () => {
       render(<StatsSummary records={records} />);
 
       // Assert
-      expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText(/success.*1|1.*success/i)).toBeInTheDocument();
+      expect(screen.getByTestId('total-calls')).toHaveTextContent('2');
+      expect(screen.getByTestId('success-count')).toHaveTextContent('1');
     });
   });
 
@@ -567,7 +567,7 @@ describe('StatsSummary Component', () => {
 
       // Assert
       expect(screen.getByText(/tool.*name/i)).toBeInTheDocument();
-      expect(screen.getByText(/calls/i)).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: /calls/i })).toBeInTheDocument();
       expect(screen.getByText(/errors/i)).toBeInTheDocument();
     });
 
@@ -727,7 +727,7 @@ describe('StatsSummary Component', () => {
       const rows = screen.getAllByRole('row');
       const toolNames = rows
         .slice(1)
-        .map((row) => row.cells[0]?.textContent || '')
+        .map((row) => (row as HTMLTableRowElement).cells[0]?.textContent || '')
         .filter(Boolean);
 
       expect(toolNames).toEqual(['Bash', 'Read', 'Write']);
@@ -820,7 +820,7 @@ describe('StatsSummary Component', () => {
 
       // Assert
       expect(container).toBeTruthy();
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByTestId('total-calls')).toHaveTextContent('1');
     });
 
     it('should handle very large number of tool calls', () => {
@@ -973,12 +973,12 @@ describe('StatsSummary Component', () => {
 
       // Act
       const { rerender } = render(<StatsSummary records={initialRecords} />);
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByTestId('total-calls')).toHaveTextContent('1');
 
       rerender(<StatsSummary records={updatedRecords} />);
 
       // Assert
-      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByTestId('total-calls')).toHaveTextContent('2');
     });
   });
 

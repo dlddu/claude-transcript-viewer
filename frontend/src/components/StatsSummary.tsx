@@ -19,7 +19,7 @@ function StatsSummary({ records }: StatsSummaryProps) {
           <h3 className="text-sm font-medium text-gray-500 mb-2">
             Total Calls
           </h3>
-          <p className="text-3xl font-bold text-gray-900">{stats.totalCalls}</p>
+          <p className="text-3xl font-bold text-gray-900" data-testid="total-calls">{stats.totalCalls}</p>
         </div>
 
         {/* Success Rate Card */}
@@ -27,7 +27,7 @@ function StatsSummary({ records }: StatsSummaryProps) {
           <h3 className="text-sm font-medium text-gray-500 mb-2">
             Success Rate
           </h3>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-3xl font-bold text-gray-900" data-testid="success-rate">
             {hasToolCalls ? `${stats.successRate}%` : 'N/A'}
           </p>
         </div>
@@ -87,13 +87,13 @@ function StatsSummary({ records }: StatsSummaryProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Success</p>
-              <p className="text-2xl font-semibold text-green-600">
+              <p className="text-2xl font-semibold text-green-600" data-testid="success-count">
                 {stats.successCount}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Failed</p>
-              <p className="text-2xl font-semibold text-red-600">
+              <p className="text-2xl font-semibold text-red-600" data-testid="failure-count">
                 {stats.failureCount}
               </p>
             </div>
