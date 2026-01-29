@@ -19,6 +19,13 @@ export interface ToolResultBlock {
   type: 'tool_result';
   tool_use_id: string;
   content: string;
+  is_error?: boolean;
+}
+
+export interface MatchedToolCall {
+  toolUse: ToolUseBlock;
+  toolResult: ToolResultBlock | null;
+  isError: boolean;
 }
 
 export type ContentBlock = TextBlock | ToolUseBlock | ToolResultBlock;
