@@ -1,4 +1,4 @@
-import type { TranscriptRecord, MatchedToolCall } from '../types';
+import type { TranscriptRecord, MatchedToolCall, ToolUseBlock, ToolResultBlock } from '../types';
 
 /**
  * Matches tool_use blocks with their corresponding tool_result blocks
@@ -7,7 +7,7 @@ import type { TranscriptRecord, MatchedToolCall } from '../types';
  */
 export function matchToolCalls(records: TranscriptRecord[]): MatchedToolCall[] {
   // Step 1: Collect all tool_use blocks (preserving order)
-  const toolUseBlocks: Array<{ block: any; }> = [];
+  const toolUseBlocks: ToolUseBlock[] = [];
 
   for (const record of records) {
     // Ensure content is an array before processing
@@ -17,13 +17,13 @@ export function matchToolCalls(records: TranscriptRecord[]): MatchedToolCall[] {
 
     for (const block of record.message.content) {
       if (block.type === 'tool_use') {
-        toolUseBlocks.push({ block });
+        toolUseBlocks.push(block);
       }
     }
   }
 
   // Step 2: Collect all tool_result blocks into a Map for fast lookup
-  const toolResultMap = new Map<string, any>();
+  const toolResultMap = new Map<string, ToolResultBlock>();
 
   for (const record of records) {
     // Ensure content is an array before processing
@@ -39,7 +39,7 @@ export function matchToolCalls(records: TranscriptRecord[]): MatchedToolCall[] {
   }
 
   // Step 3: Match tool_use blocks with their corresponding tool_result blocks
-  const matchedToolCalls: MatchedToolCall[] = toolUseBlocks.map(({ block }) => {
+  const matchedToolCalls: MatchedToolCall[] = toolUseBlocks.map((block) => {
     const toolResult = toolResultMap.get(block.id) || null;
 
     // Determine isError based on tool_result.is_error flag

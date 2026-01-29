@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { matchToolCalls } from '../../src/utils/toolMatching';
-import type {
-  TranscriptRecord,
-  ToolUseBlock,
-  ToolResultBlock,
-} from '../../src/types';
+import type { TranscriptRecord } from '../../src/types';
 
 describe('Tool Matching Utility', () => {
   describe('matchToolCalls function', () => {
