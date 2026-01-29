@@ -54,3 +54,10 @@ export interface TranscriptStats {
   successRate: number;
   byTool: ToolStats[];
 }
+
+export interface FilterOptions {
+  showUserOnly: boolean;
+  showErrorsOnly: boolean;
+  selectedTool: string | null;
+  searchText: string;
+}
