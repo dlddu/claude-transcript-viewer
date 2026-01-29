@@ -1,0 +1,365 @@
+{
+  "success": true,
+  "tests_created": [
+    {
+      "file": "/tmp/claude-transcript-viewer-dld223/frontend/__tests__/components/StatsSummary.test.tsx",
+      "action": "created",
+      "type": "unit",
+      "test_cases": [
+        {
+          "name": "should render without crashing",
+          "description": "Verifies component renders with empty props",
+          "category": "happy_path"
+        },
+        {
+          "name": "should render with empty records array",
+          "description": "Displays basic UI elements with no data",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display zero total calls when records array is empty",
+          "description": "Shows 0 for total calls when no tool calls exist",
+          "category": "edge_case"
+        },
+        {
+          "name": "should display N/A or 0% success rate when no tool calls exist",
+          "description": "Handles empty state for success rate calculation",
+          "category": "edge_case"
+        },
+        {
+          "name": "should show empty table or 'No tool calls' message",
+          "description": "Displays appropriate message when no data",
+          "category": "edge_case"
+        },
+        {
+          "name": "should count single tool call correctly",
+          "description": "Counts 1 tool_use block accurately",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count multiple tool calls correctly",
+          "description": "Aggregates total calls from multiple tool_use blocks",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count successful tool calls when is_error is false",
+          "description": "Tracks success count based on is_error flag",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count failed tool calls when is_error is true",
+          "description": "Tracks failure count when is_error is true",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count both success and failure correctly",
+          "description": "Accurately counts mixed success/failure results",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display 100% success rate when all calls succeed",
+          "description": "Shows 100% when no failures",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display 0% success rate when all calls fail",
+          "description": "Shows 0% when all calls have errors",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display 50% success rate when half succeed",
+          "description": "Calculates percentage correctly for mixed results",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display rounded percentage for partial success rates",
+          "description": "Rounds success rate to appropriate decimal places (66.67%)",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display table header with Tool Name, Calls, Errors columns",
+          "description": "Renders breakdown table with proper column headers",
+          "category": "happy_path"
+        },
+        {
+          "name": "should list each unique tool name in the table",
+          "description": "Shows distinct tool names in breakdown",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display correct call count for each tool",
+          "description": "Aggregates calls per tool name (e.g., Read: 2, Write: 1)",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display correct error count for each tool",
+          "description": "Counts errors per tool accurately",
+          "category": "happy_path"
+        },
+        {
+          "name": "should show 0 errors for tools that never failed",
+          "description": "Shows 0 in error column for successful tools",
+          "category": "happy_path"
+        },
+        {
+          "name": "should sort tools by name alphabetically",
+          "description": "Orders tool breakdown table alphabetically",
+          "category": "happy_path"
+        },
+        {
+          "name": "should handle tool_result with missing is_error field",
+          "description": "Treats missing is_error as success (undefined handling)",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle very large number of tool calls",
+          "description": "Processes 100+ tool calls without issues",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle tools with special characters in name",
+          "description": "Displays tool names with special characters correctly",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle mixed content with text and tool blocks",
+          "description": "Filters tool_use from mixed ContentBlock arrays",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle duplicate tool_use IDs gracefully",
+          "description": "Does not crash on duplicate IDs",
+          "category": "error_case"
+        },
+        {
+          "name": "should accept TranscriptRecord array as records prop",
+          "description": "Type-safe props acceptance",
+          "category": "happy_path"
+        },
+        {
+          "name": "should update display when records prop changes",
+          "description": "Reacts to prop changes correctly",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display total calls in a card with proper styling",
+          "description": "Uses Tailwind CSS for card styling",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display success rate in a separate card",
+          "description": "Shows success rate with proper formatting",
+          "category": "happy_path"
+        },
+        {
+          "name": "should use Tailwind CSS classes for styling",
+          "description": "Verifies Tailwind utility classes are applied",
+          "category": "happy_path"
+        },
+        {
+          "name": "should handle tool calls without matching tool_result",
+          "description": "Handles pending/unmatched tool calls",
+          "category": "edge_case"
+        },
+        {
+          "name": "should count tool calls from multiple assistant messages",
+          "description": "Aggregates across multiple messages",
+          "category": "happy_path"
+        },
+        {
+          "name": "should display zero total calls when records have no tool_use blocks",
+          "description": "Handles text-only messages",
+          "category": "edge_case"
+        },
+        {
+          "name": "should have proper structure with cards and table",
+          "description": "Layout verification",
+          "category": "happy_path"
+        },
+        {
+          "name": "should compile without type errors for valid TranscriptRecord array",
+          "description": "TypeScript compilation test",
+          "category": "happy_path"
+        }
+      ]
+    },
+    {
+      "file": "/tmp/claude-transcript-viewer-dld223/frontend/__tests__/utils/statsCalculator.test.ts",
+      "action": "created",
+      "type": "unit",
+      "test_cases": [
+        {
+          "name": "should return zero stats for empty array",
+          "description": "Returns default zero values for empty input",
+          "category": "edge_case"
+        },
+        {
+          "name": "should return zero stats when records have no tool_use blocks",
+          "description": "Handles text-only messages",
+          "category": "edge_case"
+        },
+        {
+          "name": "should count single tool_use correctly",
+          "description": "Basic counting test",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count multiple tool_use blocks in single message",
+          "description": "Counts multiple tool_use in one message",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count tool_use across multiple messages",
+          "description": "Aggregates across messages",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count successful tool call when is_error is false",
+          "description": "Success counting logic",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count failed tool call when is_error is true",
+          "description": "Failure counting logic",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count both success and failures correctly",
+          "description": "Mixed success/failure counting",
+          "category": "happy_path"
+        },
+        {
+          "name": "should treat missing is_error as success",
+          "description": "Default behavior for undefined is_error",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle tool_use without matching tool_result",
+          "description": "Unmatched tool_use handling",
+          "category": "edge_case"
+        },
+        {
+          "name": "should return 100 when all calls succeed",
+          "description": "100% success rate calculation",
+          "category": "happy_path"
+        },
+        {
+          "name": "should return 0 when all calls fail",
+          "description": "0% success rate calculation",
+          "category": "happy_path"
+        },
+        {
+          "name": "should return 50 when half succeed",
+          "description": "50% success rate calculation",
+          "category": "happy_path"
+        },
+        {
+          "name": "should round success rate to 2 decimal places",
+          "description": "Rounding logic (66.67%)",
+          "category": "happy_path"
+        },
+        {
+          "name": "should return 0 when no tool results exist",
+          "description": "Handles no results case",
+          "category": "edge_case"
+        },
+        {
+          "name": "should create breakdown entry for single tool",
+          "description": "byTool array structure",
+          "category": "happy_path"
+        },
+        {
+          "name": "should aggregate counts for same tool name",
+          "description": "Groups by tool name",
+          "category": "happy_path"
+        },
+        {
+          "name": "should count errors per tool correctly",
+          "description": "Per-tool error counting",
+          "category": "happy_path"
+        },
+        {
+          "name": "should show 0 errors for tools that never failed",
+          "description": "Zero errors for successful tools",
+          "category": "happy_path"
+        },
+        {
+          "name": "should sort tools alphabetically by name",
+          "description": "Alphabetical sorting",
+          "category": "happy_path"
+        },
+        {
+          "name": "should handle very large number of tool calls",
+          "description": "Performance test with 1000 calls",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle tools with special characters in name",
+          "description": "Special character handling",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle mixed content blocks",
+          "description": "Filters tool_use from mixed content",
+          "category": "edge_case"
+        },
+        {
+          "name": "should handle tool_result blocks without matching tool_use",
+          "description": "Orphan tool_result handling",
+          "category": "edge_case"
+        },
+        {
+          "name": "should return object with all required fields",
+          "description": "Return type structure validation",
+          "category": "happy_path"
+        },
+        {
+          "name": "should return byTool array with correct structure",
+          "description": "byTool item structure validation",
+          "category": "happy_path"
+        }
+      ]
+    }
+  ],
+  "test_summary": {
+    "total_files": 2,
+    "total_test_cases": 61,
+    "new_test_cases": 61,
+    "modified_test_cases": 0
+  },
+  "workflow_changes": {
+    "file": "/tmp/claude-transcript-viewer-dld223/.github/workflows/frontend-test.yml",
+    "action": "created",
+    "changes": [
+      "Created new GitHub Actions workflow for frontend tests",
+      "Added test execution step with npm test",
+      "Added coverage report step with npm run test:coverage",
+      "Added code coverage upload to Codecov",
+      "Configured workflow to run on push and PR to main/master/develop branches",
+      "Set up Node.js 20 with npm cache",
+      "Added linting and type checking steps"
+    ]
+  },
+  "test_commands": {
+    "run_all": "npm test",
+    "run_specific_component": "npm test -- StatsSummary.test.tsx",
+    "run_specific_util": "npm test -- statsCalculator.test.ts",
+    "run_watch": "npm run test:watch",
+    "coverage": "npm run test:coverage"
+  },
+  "dependencies_needed": [],
+  "notes": [
+    "Tests are currently FAILING as expected (TDD Red Phase)",
+    "Component file src/components/StatsSummary.tsx needs to be created",
+    "Utility file src/utils/statsCalculator.ts needs to be created",
+    "Tests expect TranscriptStats interface with: totalCalls, successCount, failureCount, successRate, byTool[]",
+    "byTool array items should have: name, count, errors",
+    "Success rate should be rounded to 2 decimal places (e.g., 66.67)",
+    "Tools should be sorted alphabetically in the breakdown table",
+    "Missing is_error field should be treated as success (false)",
+    "Component should use Tailwind CSS for styling",
+    "Component should display statistics in cards and a table",
+    "All 321 existing tests still pass",
+    "Coverage threshold is 70% as configured in vitest.config.ts"
+  ]
+}
