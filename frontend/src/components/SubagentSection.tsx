@@ -7,7 +7,7 @@ interface SubagentSectionProps {
   children?: React.ReactNode;
 }
 
-function SubagentSection({ sessionId, agentId, agentType, children }: SubagentSectionProps) {
+function SubagentSection({ sessionId: _sessionId, agentId: _agentId, agentType, children }: SubagentSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleToggle = () => {
