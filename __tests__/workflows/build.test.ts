@@ -459,5 +459,366 @@ describe('GitHub Actions Build Workflow', () => {
         expect(tagsString).toMatch(/semver.*pattern=v?\{\{version\}\}|semver/i);
       });
     });
+
+    describe('Docker Build and Push Step', () => {
+      let buildPushStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        buildPushStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+      });
+
+      it('should have docker build and push step', () => {
+        // Assert
+        expect(buildPushStep).toBeDefined();
+      });
+
+      it('should use docker/build-push-action@v5', () => {
+        // Assert
+        expect(buildPushStep.uses).toMatch(/docker\/build-push-action@v5/);
+      });
+
+      it('should have a descriptive name', () => {
+        // Assert
+        expect(buildPushStep).toHaveProperty('name');
+        expect(typeof buildPushStep.name).toBe('string');
+        expect(buildPushStep.name.length).toBeGreaterThan(0);
+      });
+
+      it('should use metadata step output for tags', () => {
+        // Assert
+        expect(buildPushStep).toHaveProperty('with');
+        expect(buildPushStep.with).toHaveProperty('tags');
+
+        const tagsValue = buildPushStep.with.tags;
+        expect(tagsValue).toMatch(/\$\{\{\s*steps\.meta\.outputs\.tags\s*\}\}/);
+      });
+
+      it('should use metadata step output for labels', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('labels');
+
+        const labelsValue = buildPushStep.with.labels;
+        expect(labelsValue).toMatch(/\$\{\{\s*steps\.meta\.outputs\.labels\s*\}\}/);
+      });
+
+      it('should enable push to registry', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('push');
+        expect(buildPushStep.with.push).toBe(true);
+      });
+
+      it('should use correct Dockerfile context', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('context');
+        expect(buildPushStep.with.context).toBe('.');
+      });
+
+      it('should specify Dockerfile location', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('file');
+        expect(buildPushStep.with.file).toMatch(/Dockerfile/);
+      });
+    });
+
+    describe('Docker Build Cache Configuration', () => {
+      let buildPushStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        buildPushStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+      });
+
+      it('should configure cache-from with GitHub Actions cache', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('cache-from');
+
+        const cacheFrom = buildPushStep.with['cache-from'];
+        expect(cacheFrom).toMatch(/type=gha/);
+      });
+
+      it('should configure cache-to with GitHub Actions cache', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('cache-to');
+
+        const cacheTo = buildPushStep.with['cache-to'];
+        expect(cacheTo).toMatch(/type=gha/);
+      });
+
+      it('should use mode=max for cache-to to maximize cache layers', () => {
+        // Assert
+        const cacheTo = buildPushStep.with['cache-to'];
+        expect(cacheTo).toMatch(/mode=max/);
+      });
+
+      it('should have both cache-from and cache-to configured', () => {
+        // Assert
+        expect(buildPushStep.with['cache-from']).toBeDefined();
+        expect(buildPushStep.with['cache-to']).toBeDefined();
+      });
+    });
+
+    describe('Build Step Order', () => {
+      let steps: any[];
+
+      beforeAll(() => {
+        steps = workflowConfig.jobs.build.steps;
+      });
+
+      it('should have docker login before build-push', () => {
+        // Arrange
+        const loginIndex = steps.findIndex((step: any) =>
+          step.uses && step.uses.includes('docker/login-action')
+        );
+        const buildPushIndex = steps.findIndex((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+
+        // Assert
+        expect(loginIndex).toBeGreaterThan(-1);
+        expect(buildPushIndex).toBeGreaterThan(-1);
+        expect(loginIndex).toBeLessThan(buildPushIndex);
+      });
+
+      it('should extract metadata before build-push', () => {
+        // Arrange
+        const metadataIndex = steps.findIndex((step: any) =>
+          step.uses && step.uses.includes('docker/metadata-action')
+        );
+        const buildPushIndex = steps.findIndex((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+
+        // Assert
+        expect(metadataIndex).toBeGreaterThan(-1);
+        expect(buildPushIndex).toBeGreaterThan(-1);
+        expect(metadataIndex).toBeLessThan(buildPushIndex);
+      });
+
+      it('should build application before docker build-push', () => {
+        // Arrange
+        const buildBackendIndex = steps.findIndex((step: any) =>
+          step.run && step.run.includes('npm run build') && step.run.includes('backend')
+        );
+        const buildFrontendIndex = steps.findIndex((step: any) =>
+          step.run && step.run.includes('npm run build') && step.run.includes('frontend')
+        );
+        const buildPushIndex = steps.findIndex((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+
+        // Assert
+        if (buildBackendIndex > -1 && buildPushIndex > -1) {
+          expect(buildBackendIndex).toBeLessThan(buildPushIndex);
+        }
+        if (buildFrontendIndex > -1 && buildPushIndex > -1) {
+          expect(buildFrontendIndex).toBeLessThan(buildPushIndex);
+        }
+      });
+    });
+  });
+
+  describe('Pull Request Image Tagging', () => {
+    it('should support pr-<number> tag pattern for pull requests', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      expect(metadataStep).toBeDefined();
+      expect(metadataStep.with).toHaveProperty('tags');
+
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      // Check for pr tag type or ref tag type that would create pr-* tags
+      const hasPrTagging = tagsString.match(/type=ref.*event=pr/i) !== null;
+      expect(hasPrTagging).toBe(true);
+    });
+
+    it('should tag with pr-<number> format when triggered by pull request', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      // Verify pr reference tagging is configured
+      const prTagLine = tagsString.split('\n').find((line: string) =>
+        line.includes('event=pr') || line.includes('pull_request')
+      );
+
+      expect(prTagLine).toBeDefined();
+    });
+  });
+
+  describe('Main Branch Image Tagging', () => {
+    it('should push latest tag on main branch', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      const latestTagLine = tagsString.split('\n').find((line: string) =>
+        line.includes('latest')
+      );
+
+      expect(latestTagLine).toBeDefined();
+      expect(latestTagLine).toMatch(/enable=.*refs\/heads\/main/);
+    });
+
+    it('should push version tags when semantic version tags are pushed', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      // Should support semver tagging
+      expect(tagsString).toMatch(/type=semver/i);
+    });
+
+    it('should extract version from git tags with v prefix', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      const semverLine = tagsString.split('\n').find((line: string) =>
+        line.includes('type=semver')
+      );
+
+      expect(semverLine).toBeDefined();
+      // Should handle {{version}} pattern for v*.*.* tags
+      expect(semverLine).toMatch(/pattern=.*\{\{version\}\}/);
+    });
+  });
+
+  describe('Dependency Lock Files', () => {
+    it('should have package-lock.json in root directory', () => {
+      // Arrange
+      const packageLockPath = path.join(__dirname, '../../package-lock.json');
+
+      // Assert
+      expect(fs.existsSync(packageLockPath)).toBe(true);
+    });
+
+    it('should have package-lock.json for backend Dockerfile npm ci', () => {
+      // Arrange
+      const backendPackageLockPath = path.join(__dirname, '../../backend/package-lock.json');
+      const dockerfilePath = path.join(__dirname, '../../Dockerfile');
+
+      // Assert: Check if Dockerfile exists
+      expect(fs.existsSync(dockerfilePath)).toBe(true);
+
+      // Read Dockerfile to check if it uses npm ci
+      const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf-8');
+      const usesNpmCi = dockerfileContent.includes('npm ci');
+
+      if (usesNpmCi) {
+        // If Dockerfile uses npm ci, package-lock.json should exist
+        expect(fs.existsSync(backendPackageLockPath)).toBe(true);
+      }
+    });
+
+    it('should have package-lock.json for frontend Dockerfile npm ci', () => {
+      // Arrange
+      const frontendPackageLockPath = path.join(__dirname, '../../frontend/package-lock.json');
+      const dockerfilePath = path.join(__dirname, '../../Dockerfile');
+
+      // Assert: Check if Dockerfile exists
+      expect(fs.existsSync(dockerfilePath)).toBe(true);
+
+      // Read Dockerfile to check if it uses npm ci in frontend stage
+      const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf-8');
+      const frontendStage = dockerfileContent.match(/FROM.*AS frontend-builder[\s\S]*?(?=FROM|$)/i);
+
+      if (frontendStage && frontendStage[0].includes('npm ci')) {
+        // If Dockerfile frontend stage uses npm ci, package-lock.json should exist
+        expect(fs.existsSync(frontendPackageLockPath)).toBe(true);
+      }
+    });
+
+    it('should use npm ci in Dockerfile for reproducible builds', () => {
+      // Arrange
+      const dockerfilePath = path.join(__dirname, '../../Dockerfile');
+      const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf-8');
+
+      // Assert
+      expect(dockerfileContent).toMatch(/npm ci/);
+    });
+
+    it('should copy package-lock.json before running npm ci in Dockerfile', () => {
+      // Arrange
+      const dockerfilePath = path.join(__dirname, '../../Dockerfile');
+      const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf-8');
+
+      // Assert: package*.json should be copied before npm ci
+      const lines = dockerfileContent.split('\n');
+      let foundCopyPackage = false;
+      let foundNpmCi = false;
+
+      for (const line of lines) {
+        if (line.includes('COPY') && line.includes('package*.json')) {
+          foundCopyPackage = true;
+        }
+        if (foundCopyPackage && line.includes('npm ci')) {
+          foundNpmCi = true;
+          break;
+        }
+      }
+
+      expect(foundCopyPackage).toBe(true);
+      expect(foundNpmCi).toBe(true);
+    });
+  });
+
+  describe('Workflow Pull Request Trigger', () => {
+    it('should trigger on pull request events', () => {
+      // Assert
+      expect(workflowConfig).toHaveProperty('on');
+      expect(workflowConfig.on).toHaveProperty('pull_request');
+    });
+
+    it('should build and push images for pull requests', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      // Assert: Build step should be present and push should be enabled
+      expect(buildPushStep).toBeDefined();
+      expect(buildPushStep.with.push).toBe(true);
+    });
   });
 });
