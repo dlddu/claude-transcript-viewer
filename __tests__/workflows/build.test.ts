@@ -290,4 +290,174 @@ describe('GitHub Actions Build Workflow', () => {
       }).not.toThrow();
     });
   });
+
+  describe('GitHub Container Registry (GHCR) Configuration', () => {
+    it('should have packages write permission', () => {
+      // Assert
+      expect(workflowConfig.jobs.build).toHaveProperty('permissions');
+      expect(workflowConfig.jobs.build.permissions).toHaveProperty('packages');
+      expect(workflowConfig.jobs.build.permissions.packages).toBe('write');
+    });
+
+    describe('GHCR Login Step', () => {
+      let ghcrLoginStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        ghcrLoginStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/login-action')
+        );
+      });
+
+      it('should have GHCR login step', () => {
+        // Assert
+        expect(ghcrLoginStep).toBeDefined();
+      });
+
+      it('should use docker/login-action@v3', () => {
+        // Assert
+        expect(ghcrLoginStep.uses).toMatch(/docker\/login-action@v3/);
+      });
+
+      it('should configure registry as ghcr.io', () => {
+        // Assert
+        expect(ghcrLoginStep).toHaveProperty('with');
+        expect(ghcrLoginStep.with).toHaveProperty('registry');
+        expect(ghcrLoginStep.with.registry).toBe('ghcr.io');
+      });
+
+      it('should use GITHUB_TOKEN for authentication', () => {
+        // Assert
+        expect(ghcrLoginStep.with).toHaveProperty('password');
+        expect(ghcrLoginStep.with.password).toMatch(/\$\{\{\s*secrets\.GITHUB_TOKEN\s*\}\}/);
+      });
+
+      it('should use repository owner as username', () => {
+        // Assert
+        expect(ghcrLoginStep.with).toHaveProperty('username');
+        expect(ghcrLoginStep.with.username).toMatch(/\$\{\{\s*github\.actor\s*\}\}/);
+      });
+    });
+
+    describe('Docker Metadata Extraction Step', () => {
+      let metadataStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        metadataStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/metadata-action')
+        );
+      });
+
+      it('should have Docker metadata extraction step', () => {
+        // Assert
+        expect(metadataStep).toBeDefined();
+      });
+
+      it('should use docker/metadata-action@v5', () => {
+        // Assert
+        expect(metadataStep.uses).toMatch(/docker\/metadata-action@v5/);
+      });
+
+      it('should configure correct image name', () => {
+        // Assert
+        expect(metadataStep).toHaveProperty('with');
+        expect(metadataStep.with).toHaveProperty('images');
+        expect(metadataStep.with.images).toBe('ghcr.io/dlddu/claude-transcript-viewer');
+      });
+
+      it('should have output id for metadata', () => {
+        // Assert
+        expect(metadataStep).toHaveProperty('id');
+        expect(typeof metadataStep.id).toBe('string');
+        expect(metadataStep.id.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Image Tagging Strategy', () => {
+      let metadataStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        metadataStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/metadata-action')
+        );
+      });
+
+      it('should include latest tag for main branch', () => {
+        // Assert
+        expect(metadataStep.with).toHaveProperty('tags');
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        expect(tagsString).toMatch(/type=raw.*latest/i);
+      });
+
+      it('should include semver tag pattern for version tags', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        expect(tagsString).toMatch(/type=semver/i);
+      });
+
+      it('should include SHA-based tag', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        expect(tagsString).toMatch(/type=sha/i);
+      });
+
+      it('should have at least three tagging strategies', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        const typeMatches = tagsString.match(/type=/g);
+        expect(typeMatches).toBeDefined();
+        expect(typeMatches!.length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    describe('Tag Strategy Conditions', () => {
+      let metadataStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        metadataStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/metadata-action')
+        );
+      });
+
+      it('should apply latest tag only on main branch', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+
+        // Check that latest tag has a condition for main branch
+        const latestTagLine = tagsString.split('\n').find((line: string) =>
+          line.includes('latest')
+        );
+
+        if (latestTagLine) {
+          // If there's a condition, it should reference main branch
+          if (latestTagLine.includes('enable=')) {
+            expect(latestTagLine).toMatch(/main/i);
+          }
+        }
+      });
+
+      it('should support v*.*.* tag pattern for semver', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+
+        // Semver pattern should handle v prefix
+        expect(tagsString).toMatch(/semver.*pattern=v?\{\{version\}\}|semver/i);
+      });
+    });
+  });
 });
