@@ -263,8 +263,10 @@ describe('useSessions hook', () => {
       // Start refetch (don't await yet)
       const refetchPromise = result.current.refetch();
 
-      // Loading should be true immediately after refetch is called
-      expect(result.current.loading).toBe(true);
+      // Loading should be true during refetch (use waitFor for async state update)
+      await waitFor(() => {
+        expect(result.current.loading).toBe(true);
+      });
 
       // Resolve second fetch
       resolveSecondFetch!({
