@@ -225,8 +225,8 @@ describe('useSessions hook', () => {
     });
 
     it('should set loading state during refetch', async () => {
-      let resolveFirstFetch: (value: any) => void;
-      let resolveSecondFetch: (value: any) => void;
+      let resolveFirstFetch: (value: Response) => void;
+      let resolveSecondFetch: (value: Response) => void;
 
       const firstFetchPromise = new Promise((resolve) => {
         resolveFirstFetch = resolve;
