@@ -225,34 +225,61 @@ describe('useSessions hook', () => {
     });
 
     it('should set loading state during refetch', async () => {
-      global.fetch = vi.fn().mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  status: 200,
-                  json: async () => [],
-                }),
-              50
-            )
-          )
-      );
+      let resolveFirstFetch: (value: any) => void;
+      let resolveSecondFetch: (value: any) => void;
+
+      const firstFetchPromise = new Promise((resolve) => {
+        resolveFirstFetch = resolve;
+      });
+
+      const secondFetchPromise = new Promise((resolve) => {
+        resolveSecondFetch = resolve;
+      });
+
+      const mockFetch = vi
+        .fn()
+        .mockImplementationOnce(() => firstFetchPromise)
+        .mockImplementationOnce(() => secondFetchPromise);
+
+      global.fetch = mockFetch;
 
       const { result } = renderHook(() => useSessions());
 
+      // Initial loading state should be true
+      expect(result.current.loading).toBe(true);
+
+      // Resolve first fetch
+      resolveFirstFetch!({
+        ok: true,
+        status: 200,
+        json: async () => [],
+      });
+
+      // Wait for initial fetch to complete
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
       });
 
+      // Start refetch (don't await yet)
       const refetchPromise = result.current.refetch();
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(true);
+      // Loading should be true immediately after refetch is called
+      expect(result.current.loading).toBe(true);
+
+      // Resolve second fetch
+      resolveSecondFetch!({
+        ok: true,
+        status: 200,
+        json: async () => [],
       });
 
+      // Wait for refetch to complete
       await refetchPromise;
+
+      // Loading should be false after refetch completes
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
     });
 
     it('should handle errors during refetch', async () => {
