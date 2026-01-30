@@ -147,9 +147,7 @@ describe('GitHub Actions Build Workflow', () => {
     it('should have step names for all steps', () => {
       // Assert
       steps.forEach((step: any, index: number) => {
-        expect(step).toHaveProperty('name',
-          `Step at index ${index} should have a name property`
-        );
+        expect(step).toHaveProperty('name');
         expect(typeof step.name).toBe('string');
         expect(step.name.length).toBeGreaterThan(0);
       });
