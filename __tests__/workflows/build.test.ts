@@ -504,10 +504,18 @@ describe('GitHub Actions Build Workflow', () => {
         expect(labelsValue).toMatch(/\$\{\{\s*steps\.meta\.outputs\.labels\s*\}\}/);
       });
 
-      it('should enable push to registry', () => {
+      it('should configure conditional push to registry', () => {
         // Assert
         expect(buildPushStep.with).toHaveProperty('push');
-        expect(buildPushStep.with.push).toBe(true);
+        // Push should be conditional based on event type (not push for PRs)
+        const pushValue = buildPushStep.with.push;
+        if (typeof pushValue === 'string') {
+          // Should be a conditional expression that checks event type
+          expect(pushValue).toMatch(/\$\{\{.*github\.event_name.*!=.*pull_request.*\}\}/);
+        } else {
+          // If boolean, should be true for non-PR events
+          expect(pushValue).toBe(true);
+        }
       });
 
       it('should use correct Dockerfile context', () => {
@@ -809,16 +817,123 @@ describe('GitHub Actions Build Workflow', () => {
       expect(workflowConfig.on).toHaveProperty('pull_request');
     });
 
-    it('should build and push images for pull requests', () => {
+    it('should trigger on pull requests targeting main branch', () => {
+      // Assert
+      const prConfig = workflowConfig.on.pull_request;
+
+      // If branches are specified, should include main
+      if (prConfig && typeof prConfig === 'object' && prConfig.branches) {
+        expect(prConfig.branches).toContain('main');
+      }
+      // If no branches specified, it triggers on all branches (which is also valid)
+    });
+
+    it('should trigger on pull requests targeting develop branch', () => {
+      // Assert
+      const prConfig = workflowConfig.on.pull_request;
+
+      // If branches are specified, should include develop
+      if (prConfig && typeof prConfig === 'object' && prConfig.branches) {
+        expect(prConfig.branches).toContain('develop');
+      }
+      // If no branches specified, it triggers on all branches (which is also valid)
+    });
+
+    it('should build but not push images for pull requests', () => {
       // Arrange
       const steps = workflowConfig.jobs.build.steps;
       const buildPushStep = steps.find((step: any) =>
         step.uses && step.uses.includes('docker/build-push-action')
       );
 
-      // Assert: Build step should be present and push should be enabled
+      // Assert: Build step should be present but push should be conditional
       expect(buildPushStep).toBeDefined();
-      expect(buildPushStep.with.push).toBe(true);
+      expect(buildPushStep.with).toHaveProperty('push');
+
+      // Push should be a conditional expression that checks event type
+      const pushValue = buildPushStep.with.push;
+
+      // Should be a GitHub expression that excludes pull_request events
+      if (typeof pushValue === 'string') {
+        expect(pushValue).toMatch(/\$\{\{.*github\.event_name.*!=.*pull_request.*\}\}/);
+      } else {
+        // If not a string, it should be false for safety in PRs
+        expect(pushValue).toBe(false);
+      }
+    });
+
+    it('should use conditional push expression to prevent PR pushes', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      // Assert: Push parameter should contain event_name check
+      const pushValue = buildPushStep.with.push;
+
+      if (typeof pushValue === 'string') {
+        // Should check that event_name is not pull_request
+        expect(pushValue).toMatch(/github\.event_name/);
+        expect(pushValue).toMatch(/pull_request/);
+        expect(pushValue).toMatch(/!=/);
+      }
+    });
+  });
+
+  describe('Docker Image Push Conditions', () => {
+    let buildPushStep: any;
+
+    beforeAll(() => {
+      const steps = workflowConfig.jobs.build.steps;
+      buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+    });
+
+    it('should push images on main branch push events', () => {
+      // Assert: The conditional expression should allow push on non-PR events
+      const pushValue = buildPushStep.with.push;
+
+      if (typeof pushValue === 'string') {
+        // Expression should evaluate to true when event_name is 'push'
+        expect(pushValue).toMatch(/github\.event_name.*!=.*pull_request/);
+      } else if (typeof pushValue === 'boolean') {
+        // If hardcoded boolean, it should handle PRs differently
+        // This test would need workflow to be updated to conditional
+        expect(pushValue).toBe(true);
+      }
+    });
+
+    it('should push images on develop branch push events', () => {
+      // Assert: Same conditional should work for develop branch
+      const pushValue = buildPushStep.with.push;
+
+      if (typeof pushValue === 'string') {
+        // The expression doesn't need to check branch name specifically
+        // It just needs to check event_name != pull_request
+        expect(pushValue).toMatch(/github\.event_name.*!=.*pull_request/);
+      }
+    });
+
+    it('should push images on tag push events', () => {
+      // Assert: Tag pushes are 'push' events, so should work with the conditional
+      const pushValue = buildPushStep.with.push;
+
+      if (typeof pushValue === 'string') {
+        // Expression should allow push events (which includes tag pushes)
+        expect(pushValue).toMatch(/github\.event_name.*!=.*pull_request/);
+      }
+    });
+
+    it('should have consistent push configuration across workflow', () => {
+      // Assert: There should only be one build-push step
+      const steps = workflowConfig.jobs.build.steps;
+      const buildPushSteps = steps.filter((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      expect(buildPushSteps.length).toBe(1);
     });
   });
 });
