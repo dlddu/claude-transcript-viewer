@@ -291,6 +291,20 @@ describe('GitHub Actions Build Workflow', () => {
     });
   });
 
+  describe('Pull Request Trigger Configuration', () => {
+    it('should trigger on pull_request events', () => {
+      // Assert
+      expect(workflowConfig).toHaveProperty('on');
+      expect(workflowConfig.on).toHaveProperty('pull_request');
+    });
+
+    it('should trigger on PR to main branch', () => {
+      // Assert
+      expect(workflowConfig.on.pull_request).toHaveProperty('branches');
+      expect(workflowConfig.on.pull_request.branches).toContain('main');
+    });
+  });
+
   describe('GitHub Container Registry (GHCR) Configuration', () => {
     it('should have packages write permission', () => {
       // Assert
@@ -409,14 +423,22 @@ describe('GitHub Actions Build Workflow', () => {
         expect(tagsString).toMatch(/type=sha/i);
       });
 
-      it('should have at least three tagging strategies', () => {
+      it('should include PR tag pattern for pull requests', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        expect(tagsString).toMatch(/type=ref.*event=pr/i);
+      });
+
+      it('should have at least four tagging strategies', () => {
         // Assert
         const tagsString = typeof metadataStep.with.tags === 'string'
           ? metadataStep.with.tags
           : metadataStep.with.tags.join('\n');
         const typeMatches = tagsString.match(/type=/g);
         expect(typeMatches).toBeDefined();
-        expect(typeMatches!.length).toBeGreaterThanOrEqual(3);
+        expect(typeMatches!.length).toBeGreaterThanOrEqual(4);
       });
     });
 
@@ -458,6 +480,182 @@ describe('GitHub Actions Build Workflow', () => {
         // Semver pattern should handle v prefix
         expect(tagsString).toMatch(/semver.*pattern=v?\{\{version\}\}|semver/i);
       });
+    });
+  });
+
+  describe('Docker Build and Push Step', () => {
+    let buildPushStep: any;
+
+    beforeAll(() => {
+      const steps = workflowConfig.jobs.build.steps;
+      buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+    });
+
+    it('should have Docker build and push step', () => {
+      // Assert
+      expect(buildPushStep).toBeDefined();
+    });
+
+    it('should use docker/build-push-action@v5 or later', () => {
+      // Assert
+      expect(buildPushStep.uses).toMatch(/docker\/build-push-action@v[5-9]/);
+    });
+
+    it('should configure build context', () => {
+      // Assert
+      expect(buildPushStep).toHaveProperty('with');
+      expect(buildPushStep.with).toHaveProperty('context');
+      expect(buildPushStep.with.context).toBe('.');
+    });
+
+    it('should have push enabled', () => {
+      // Assert
+      expect(buildPushStep.with).toHaveProperty('push');
+      expect(buildPushStep.with.push).toBe(true);
+    });
+
+    it('should use tags from metadata step output', () => {
+      // Assert
+      expect(buildPushStep.with).toHaveProperty('tags');
+      expect(buildPushStep.with.tags).toMatch(/\$\{\{\s*steps\..*\.outputs\.tags\s*\}\}/);
+    });
+
+    it('should use labels from metadata step output', () => {
+      // Assert
+      expect(buildPushStep.with).toHaveProperty('labels');
+      expect(buildPushStep.with.labels).toMatch(/\$\{\{\s*steps\..*\.outputs\.labels\s*\}\}/);
+    });
+
+    it('should reference same metadata step id in tags and labels', () => {
+      // Arrange
+      const steps = workflowConfig.jobs.build.steps;
+      const metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+
+      // Assert
+      expect(metadataStep).toBeDefined();
+      expect(metadataStep).toHaveProperty('id');
+
+      const metadataStepId = metadataStep.id;
+      const expectedTagsRef = `\${{ steps.${metadataStepId}.outputs.tags }}`;
+      const expectedLabelsRef = `\${{ steps.${metadataStepId}.outputs.labels }}`;
+
+      expect(buildPushStep.with.tags).toBe(expectedTagsRef);
+      expect(buildPushStep.with.labels).toBe(expectedLabelsRef);
+    });
+  });
+
+  describe('GitHub Actions Cache Configuration', () => {
+    let buildPushStep: any;
+
+    beforeAll(() => {
+      const steps = workflowConfig.jobs.build.steps;
+      buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+    });
+
+    it('should configure cache-from with GitHub Actions cache', () => {
+      // Assert
+      expect(buildPushStep).toBeDefined();
+      expect(buildPushStep.with).toHaveProperty('cache-from');
+      expect(buildPushStep.with['cache-from']).toMatch(/type=gha/);
+    });
+
+    it('should configure cache-to with GitHub Actions cache and max mode', () => {
+      // Assert
+      expect(buildPushStep.with).toHaveProperty('cache-to');
+      expect(buildPushStep.with['cache-to']).toMatch(/type=gha/);
+      expect(buildPushStep.with['cache-to']).toMatch(/mode=max/);
+    });
+
+    it('should use valid cache configuration format', () => {
+      // Assert
+      const cacheFrom = buildPushStep.with['cache-from'];
+      const cacheTo = buildPushStep.with['cache-to'];
+
+      // Cache configuration should be in format: type=gha or type=gha,mode=max
+      expect(cacheFrom).toMatch(/^type=gha(,.*)?$/);
+      expect(cacheTo).toMatch(/^type=gha,mode=max$/);
+    });
+  });
+
+  describe('Docker Build Step Order', () => {
+    let steps: any[];
+
+    beforeAll(() => {
+      steps = workflowConfig.jobs.build.steps;
+    });
+
+    it('should have GHCR login before build-push', () => {
+      // Arrange
+      const loginStepIndex = steps.findIndex((step: any) =>
+        step.uses && step.uses.includes('docker/login-action')
+      );
+      const buildPushStepIndex = steps.findIndex((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      // Assert
+      expect(loginStepIndex).toBeGreaterThan(-1);
+      expect(buildPushStepIndex).toBeGreaterThan(-1);
+      expect(loginStepIndex).toBeLessThan(buildPushStepIndex);
+    });
+
+    it('should have metadata extraction before build-push', () => {
+      // Arrange
+      const metadataStepIndex = steps.findIndex((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+      const buildPushStepIndex = steps.findIndex((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      // Assert
+      expect(metadataStepIndex).toBeGreaterThan(-1);
+      expect(buildPushStepIndex).toBeGreaterThan(-1);
+      expect(metadataStepIndex).toBeLessThan(buildPushStepIndex);
+    });
+  });
+
+  describe('PR Tag Format Validation', () => {
+    let metadataStep: any;
+
+    beforeAll(() => {
+      const steps = workflowConfig.jobs.build.steps;
+      metadataStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/metadata-action')
+      );
+    });
+
+    it('should generate pr-<number> format tags for pull requests', () => {
+      // Assert
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      // PR tag should use ref event type which generates pr-<number> format
+      expect(tagsString).toMatch(/type=ref.*event=pr/i);
+    });
+
+    it('should have different tag strategies for PR vs main branch', () => {
+      // Arrange
+      const tagsString = typeof metadataStep.with.tags === 'string'
+        ? metadataStep.with.tags
+        : metadataStep.with.tags.join('\n');
+
+      const tagLines = tagsString.split('\n').map((line: string) => line.trim()).filter(Boolean);
+
+      // Assert: Should have both PR tags and main/version tags
+      const hasPRTag = tagLines.some((line: string) => line.match(/type=ref.*event=pr/i));
+      const hasLatestTag = tagLines.some((line: string) => line.match(/latest/i));
+      const hasSemverTag = tagLines.some((line: string) => line.match(/type=semver/i));
+
+      expect(hasPRTag).toBe(true);
+      expect(hasLatestTag || hasSemverTag).toBe(true);
     });
   });
 });
