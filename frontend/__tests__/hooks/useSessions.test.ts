@@ -255,7 +255,7 @@ describe('useSessions hook', () => {
         ok: true,
         status: 200,
         json: async () => [],
-      });
+      } as Response);
 
       await waitFor(() => {
         expect(result.current.loading).toBe(false);
@@ -274,7 +274,7 @@ describe('useSessions hook', () => {
         ok: true,
         status: 200,
         json: async () => [],
-      });
+      } as Response);
 
       await refetchPromise;
 
