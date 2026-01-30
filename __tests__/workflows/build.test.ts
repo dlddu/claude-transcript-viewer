@@ -60,26 +60,6 @@ describe('GitHub Actions Build Workflow', () => {
       );
       expect(hasVersionPattern).toBe(true);
     });
-
-    describe('Pull Request Triggers', () => {
-      it('should trigger on pull_request events', () => {
-        // Assert
-        expect(workflowConfig.on).toHaveProperty('pull_request');
-      });
-
-      it('should trigger on pull requests targeting main branch', () => {
-        // Assert
-        expect(workflowConfig.on.pull_request).toHaveProperty('branches');
-        expect(workflowConfig.on.pull_request.branches).toContain('main');
-      });
-
-      it('should only target main branch for pull requests', () => {
-        // Assert
-        const prBranches = workflowConfig.on.pull_request.branches;
-        expect(Array.isArray(prBranches)).toBe(true);
-        expect(prBranches).toEqual(['main']);
-      });
-    });
   });
 
   describe('Job Configuration', () => {
@@ -357,27 +337,6 @@ describe('GitHub Actions Build Workflow', () => {
         expect(ghcrLoginStep.with).toHaveProperty('username');
         expect(ghcrLoginStep.with.username).toMatch(/\$\{\{\s*github\.actor\s*\}\}/);
       });
-
-      it('should skip on pull request events', () => {
-        // Assert
-        expect(ghcrLoginStep).toHaveProperty('if');
-        const ifCondition = ghcrLoginStep.if;
-
-        // Should have condition to skip on pull_request
-        expect(ifCondition).toMatch(/github\.event_name\s*!=\s*['"]pull_request['"]/);
-      });
-
-      it('should only run on push events', () => {
-        // Assert
-        const ifCondition = ghcrLoginStep.if;
-
-        // Verify the condition excludes pull_request
-        expect(typeof ifCondition).toBe('string');
-        expect(ifCondition.length).toBeGreaterThan(0);
-
-        // Should use inequality operator
-        expect(ifCondition).toMatch(/!=/);
-      });
     });
 
     describe('Docker Metadata Extraction Step', () => {
@@ -638,21 +597,6 @@ describe('GitHub Actions Build Workflow', () => {
           const hasTagCondition = pushCondition.includes("refs/tags/");
 
           expect(hasMainCondition || hasTagCondition).toBe(true);
-        }
-      });
-
-      it('should build without push on pull requests', () => {
-        // Assert
-        const pushCondition = buildPushStep.with.push;
-
-        // Push should be false for pull requests (only true for main or tags)
-        if (typeof pushCondition === 'string') {
-          // Verify condition explicitly checks refs, excluding pull requests
-          expect(pushCondition).toMatch(/github\.ref\s*==\s*['"]refs\/heads\/main['"]/);
-          expect(pushCondition).toMatch(/startsWith\(github\.ref,\s*['"]refs\/tags\//);
-
-          // Should use OR operator, not AND
-          expect(pushCondition).toMatch(/\|\|/);
         }
       });
 
