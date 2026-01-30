@@ -8,11 +8,12 @@
     "frontend"
   ],
   "scripts": {
-    "test": "npm run test:backend && npm run test:frontend",
+    "test": "npm run test:workflows && npm run test:backend && npm run test:frontend",
+    "test:workflows": "jest --testPathPattern=__tests__/workflows",
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
     "test:watch": "npm run test:backend -- --watch & npm run test:frontend -- --watch",
-    "test:coverage": "npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
+    "test:coverage": "npm run test:workflows -- --coverage && npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",
@@ -28,7 +29,13 @@
     "typecheck:frontend": "cd frontend && npm run typecheck"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3",
+    "yaml": "^2.3.4"
   },
   "engines": {
     "node": ">=18.0.0",
