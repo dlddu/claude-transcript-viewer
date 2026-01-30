@@ -60,6 +60,11 @@ describe('GitHub Actions Build Workflow', () => {
       );
       expect(hasVersionPattern).toBe(true);
     });
+
+    it('should trigger on pull request events', () => {
+      // Assert
+      expect(workflowConfig.on).toHaveProperty('pull_request');
+    });
   });
 
   describe('Job Configuration', () => {
@@ -126,22 +131,36 @@ describe('GitHub Actions Build Workflow', () => {
       expect(checkoutStep.uses).toMatch(/actions\/checkout@v[4-9]/);
     });
 
-    it('should have Node.js setup step', () => {
+    it('should have Docker Buildx setup step', () => {
       // Assert
-      const nodeStep = steps.find((step: any) =>
-        step.uses && step.uses.includes('actions/setup-node')
+      const buildxStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/setup-buildx-action')
       );
-      expect(nodeStep).toBeDefined();
+      expect(buildxStep).toBeDefined();
     });
 
-    it('should use Node.js version 20', () => {
+    it('should use docker/setup-buildx-action@v3', () => {
       // Assert
-      const nodeStep = steps.find((step: any) =>
-        step.uses && step.uses.includes('actions/setup-node')
+      const buildxStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/setup-buildx-action')
       );
-      expect(nodeStep).toHaveProperty('with');
-      expect(nodeStep.with).toHaveProperty('node-version');
-      expect(nodeStep.with['node-version']).toMatch(/20/);
+      expect(buildxStep.uses).toMatch(/docker\/setup-buildx-action@v3/);
+    });
+
+    it('should have Docker build-push step', () => {
+      // Assert
+      const buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+      expect(buildPushStep).toBeDefined();
+    });
+
+    it('should use docker/build-push-action@v5', () => {
+      // Assert
+      const buildPushStep = steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+      expect(buildPushStep.uses).toMatch(/docker\/build-push-action@v5/);
     });
 
     it('should have step names for all steps', () => {
@@ -228,19 +247,29 @@ describe('GitHub Actions Build Workflow', () => {
       }
     });
 
-    it('should use Node.js 20 consistent with project requirements', () => {
-      // Arrange
-      const packageJsonPath = path.join(__dirname, '../../package.json');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-
+    it('should configure Docker build-push with proper settings', () => {
       // Assert
-      const nodeStep = workflowConfig.jobs.build.steps.find((step: any) =>
-        step.uses && step.uses.includes('actions/setup-node')
+      const buildPushStep = workflowConfig.jobs.build.steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
       );
 
-      // Should match or exceed minimum Node version from package.json
-      const nodeVersion = nodeStep.with['node-version'];
-      expect(nodeVersion).toMatch(/20/);
+      expect(buildPushStep).toHaveProperty('with');
+      expect(buildPushStep.with).toHaveProperty('context');
+      expect(buildPushStep.with).toHaveProperty('push');
+      expect(buildPushStep.with).toHaveProperty('tags');
+      expect(buildPushStep.with).toHaveProperty('labels');
+    });
+
+    it('should use GitHub Actions cache for Docker layers', () => {
+      // Assert
+      const buildPushStep = workflowConfig.jobs.build.steps.find((step: any) =>
+        step.uses && step.uses.includes('docker/build-push-action')
+      );
+
+      expect(buildPushStep.with).toHaveProperty('cache-from');
+      expect(buildPushStep.with).toHaveProperty('cache-to');
+      expect(buildPushStep.with['cache-from']).toMatch(/type=gha/);
+      expect(buildPushStep.with['cache-to']).toMatch(/type=gha/);
     });
   });
 
@@ -288,6 +317,109 @@ describe('GitHub Actions Build Workflow', () => {
           fs.readFileSync(nonExistentPath, 'utf-8');
         }
       }).not.toThrow();
+    });
+  });
+
+  describe('Docker Build Configuration', () => {
+    describe('Docker Buildx Setup', () => {
+      let buildxStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        buildxStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/setup-buildx-action')
+        );
+      });
+
+      it('should have Docker Buildx setup step', () => {
+        // Assert
+        expect(buildxStep).toBeDefined();
+      });
+
+      it('should use docker/setup-buildx-action@v3', () => {
+        // Assert
+        expect(buildxStep.uses).toMatch(/docker\/setup-buildx-action@v3/);
+      });
+
+      it('should have a descriptive name', () => {
+        // Assert
+        expect(buildxStep).toHaveProperty('name');
+        expect(typeof buildxStep.name).toBe('string');
+        expect(buildxStep.name.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('Docker Build and Push', () => {
+      let buildPushStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        buildPushStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+      });
+
+      it('should have Docker build-push step', () => {
+        // Assert
+        expect(buildPushStep).toBeDefined();
+      });
+
+      it('should use docker/build-push-action@v5', () => {
+        // Assert
+        expect(buildPushStep.uses).toMatch(/docker\/build-push-action@v5/);
+      });
+
+      it('should configure build context', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('context');
+        expect(buildPushStep.with.context).toBe('.');
+      });
+
+      it('should enable push to registry', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('push');
+        expect(buildPushStep.with.push).toBe(true);
+      });
+
+      it('should use metadata outputs for tags', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('tags');
+        expect(buildPushStep.with.tags).toMatch(/\$\{\{\s*steps\.meta\.outputs\.tags\s*\}\}/);
+      });
+
+      it('should use metadata outputs for labels', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('labels');
+        expect(buildPushStep.with.labels).toMatch(/\$\{\{\s*steps\.meta\.outputs\.labels\s*\}\}/);
+      });
+    });
+
+    describe('Docker Layer Caching', () => {
+      let buildPushStep: any;
+
+      beforeAll(() => {
+        const steps = workflowConfig.jobs.build.steps;
+        buildPushStep = steps.find((step: any) =>
+          step.uses && step.uses.includes('docker/build-push-action')
+        );
+      });
+
+      it('should configure cache-from with GitHub Actions cache', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('cache-from');
+        expect(buildPushStep.with['cache-from']).toMatch(/type=gha/);
+      });
+
+      it('should configure cache-to with GitHub Actions cache', () => {
+        // Assert
+        expect(buildPushStep.with).toHaveProperty('cache-to');
+        expect(buildPushStep.with['cache-to']).toMatch(/type=gha/);
+      });
+
+      it('should use max cache mode for optimal performance', () => {
+        // Assert
+        expect(buildPushStep.with['cache-to']).toMatch(/mode=max/);
+      });
     });
   });
 
@@ -409,14 +541,22 @@ describe('GitHub Actions Build Workflow', () => {
         expect(tagsString).toMatch(/type=sha/i);
       });
 
-      it('should have at least three tagging strategies', () => {
+      it('should include PR-based tag for pull requests', () => {
+        // Assert
+        const tagsString = typeof metadataStep.with.tags === 'string'
+          ? metadataStep.with.tags
+          : metadataStep.with.tags.join('\n');
+        expect(tagsString).toMatch(/type=ref,event=pr/i);
+      });
+
+      it('should have at least four tagging strategies', () => {
         // Assert
         const tagsString = typeof metadataStep.with.tags === 'string'
           ? metadataStep.with.tags
           : metadataStep.with.tags.join('\n');
         const typeMatches = tagsString.match(/type=/g);
         expect(typeMatches).toBeDefined();
-        expect(typeMatches!.length).toBeGreaterThanOrEqual(3);
+        expect(typeMatches!.length).toBeGreaterThanOrEqual(4);
       });
     });
 
