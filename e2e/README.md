@@ -42,15 +42,33 @@ Run specific test file:
 npx playwright test e2e/example.spec.ts
 ```
 
+Run smoke tests only:
+
+```bash
+npx playwright test e2e/tests/smoke.spec.ts
+```
+
 ## Configuration
 
 The Playwright configuration is in `playwright.config.ts` at the root of the project.
 
 Key settings:
-- **Base URL**: `http://localhost:3000`
+- **Base URL**: `http://localhost:5173` (Frontend - Vite)
+- **Backend URL**: `http://localhost:3001` (Backend - Express)
 - **Test Directory**: `./e2e`
 - **Browsers**: Chromium, Firefox, WebKit
-- **Web Server**: Automatically starts with `npm run dev` before tests
+- **Web Server**: Automatically starts backend and frontend before tests
+
+## Directory Structure
+
+```
+e2e/
+├── fixtures/          # Test fixtures and mock data
+├── tests/            # Test files organized by feature
+│   └── smoke.spec.ts # Basic smoke tests
+├── example.spec.ts   # Example tests
+└── README.md
+```
 
 ## Test Structure
 
