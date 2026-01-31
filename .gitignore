@@ -20,6 +20,9 @@ build/
 # Testing
 coverage/
 *.lcov
+playwright-report/
+test-results/
+playwright/.cache/
 
 # IDE
 .vscode/
