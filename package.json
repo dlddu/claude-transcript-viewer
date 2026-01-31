@@ -12,6 +12,9 @@
     "test:workflows": "jest --testPathPattern=__tests__/workflows",
     "test:backend": "cd backend && npm test",
     "test:frontend": "cd frontend && npm test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "test:watch": "npm run test:backend -- --watch & npm run test:frontend -- --watch",
     "test:coverage": "npm run test:workflows -- --coverage && npm run test:backend -- --coverage && npm run test:frontend -- --coverage",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
@@ -29,6 +32,7 @@
     "typecheck:frontend": "cd frontend && npm run typecheck"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.1",
     "concurrently": "^8.2.2",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.0",
