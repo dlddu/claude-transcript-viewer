@@ -119,6 +119,9 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run E2E tests
+        env:
+          TRANSCRIPT_BUCKET: test-bucket
+          AWS_REGION: ap-northeast-2
         run: npm run test:e2e
 
       - name: Upload Playwright report
