@@ -413,6 +413,9 @@ npm run test:backend
 # Run frontend tests only
 npm run test:frontend
 
+# Run E2E tests
+npm run test:e2e
+
 # Run tests in watch mode
 npm run test:watch
 
@@ -430,13 +433,23 @@ Location: `frontend/__tests__/`
 - Framework: Vitest + React Testing Library
 - Run: `cd frontend && npm test`
 
+### E2E Tests
+Location: `e2e/`
+- Framework: Playwright
+- Run: `npm run test:e2e`
+- Additional commands:
+  - `npm run test:e2e:ui` - Run tests with UI mode
+  - `npm run test:e2e:headed` - Run tests in headed mode (see browser)
+  - `npm run test:e2e:debug` - Run tests in debug mode
+
 ## CI/CD
 
 GitHub Actions workflow is configured to:
 - Run linting
 - Run type checking
-- Run all tests with coverage
+- Run all tests with coverage (unit, integration, E2E)
 - Upload coverage reports to Codecov
+- Upload Playwright test reports
 
 Workflow file: `.github/workflows/test.yml`
 
@@ -473,10 +486,13 @@ claude-transcript-viewer/
 │   ├── vite.config.ts
 │   ├── tailwind.config.js
 │   └── package.json
+├── e2e/                        # E2E tests (Playwright)
+│   └── example.spec.ts        # Playwright test files
 ├── Dockerfile                  # Production multi-stage build
 ├── Dockerfile.backend          # Development backend Dockerfile
 ├── Dockerfile.frontend         # Development frontend Dockerfile
 ├── docker-compose.yml          # Docker Compose configuration
+├── playwright.config.ts        # Playwright configuration
 ├── .env.example                # Environment variables template
 ├── .github/
 │   └── workflows/
