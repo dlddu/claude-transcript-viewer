@@ -34,7 +34,7 @@ function TranscriptView({ sessionId }: TranscriptViewProps) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md" data-testid="error-message">
           <p className="text-red-700">{error.message}</p>
         </div>
       </div>

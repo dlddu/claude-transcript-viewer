@@ -147,7 +147,7 @@ test.describe('Transcripts', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Error message should be displayed
-      const errorElement = page.locator('text=/error/i').first();
+      const errorElement = page.getByTestId('error-message');
       await expect(errorElement).toBeVisible({ timeout: TIMEOUTS.TRANSCRIPT_LOAD });
     });
 
@@ -186,7 +186,7 @@ test.describe('Transcripts', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Error state should be shown (not loading indefinitely)
-      const errorElement = page.locator('text=/error/i').first();
+      const errorElement = page.getByTestId('error-message');
       await expect(errorElement).toBeVisible({ timeout: TIMEOUTS.TRANSCRIPT_LOAD });
     });
   });
