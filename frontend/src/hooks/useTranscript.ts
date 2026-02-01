@@ -18,10 +18,10 @@ export function useTranscript(sessionId: string): UseTranscriptResult {
     setLoading(true);
     setError(null);
     try {
-      const data = await get<TranscriptRecord[]>(`/api/transcripts/${sessionId}`);
-      setTranscript(data);
+      const response = await get<{ sessionId: string; records: TranscriptRecord[] }>(`/api/transcripts/${sessionId}`);
+      setTranscript(response.records);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setError(err instanceof Error ? err : new Error('Error loading transcript'));
       setTranscript(null);
     } finally {
       setLoading(false);

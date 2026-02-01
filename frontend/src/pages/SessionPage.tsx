@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import TranscriptView from '../components/TranscriptView';
 
 function SessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -9,9 +10,11 @@ function SessionPage() {
         Session: {sessionId}
       </h2>
       <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-600">
-          Viewing session: {sessionId}
-        </p>
+        {sessionId ? (
+          <TranscriptView sessionId={sessionId} />
+        ) : (
+          <p className="text-gray-600">No session ID provided</p>
+        )}
       </div>
     </div>
   );
