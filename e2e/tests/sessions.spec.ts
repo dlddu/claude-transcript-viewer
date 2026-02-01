@@ -12,6 +12,23 @@ import { test, expect } from '@playwright/test';
  * are not yet implemented (TDD Red Phase).
  */
 
+// Test constants for maintainability
+const SELECTORS = {
+  SESSIONS_HEADING: 'Sessions',
+  SESSION_BUTTON: /Select session/,
+  LOADING_TEXT: 'Loading sessions...',
+  ERROR_TEXT: /Error loading sessions/,
+  EMPTY_STATE_TEXT: 'No sessions available',
+} as const;
+
+const ENDPOINTS = {
+  SESSIONS: '**/api/sessions',
+} as const;
+
+const TIMEOUTS = {
+  SESSION_LOAD: 5000,
+} as const;
+
 test.describe('Sessions', () => {
   test.describe('S1: Session List Display', () => {
     test('should display session list on home page load', async ({ page }) => {
@@ -20,7 +37,7 @@ test.describe('Sessions', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Session list heading should be visible
-      const sessionsHeading = page.getByRole('heading', { name: 'Sessions' });
+      const sessionsHeading = page.getByRole('heading', { name: SELECTORS.SESSIONS_HEADING });
       await expect(sessionsHeading).toBeVisible();
     });
 
@@ -30,11 +47,16 @@ test.describe('Sessions', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Sessions heading should be visible
-      const sessionsHeading = page.getByRole('heading', { name: 'Sessions' });
+      const sessionsHeading = page.getByRole('heading', { name: SELECTORS.SESSIONS_HEADING });
       await expect(sessionsHeading).toBeVisible();
 
-      // Give time for API call to complete
-      await page.waitForTimeout(2000);
+      // Wait for session buttons to appear or timeout gracefully
+      await page.getByRole('button', { name: SELECTORS.SESSION_BUTTON })
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // The page should show either loading, error, empty state, or sessions
       // We just verify the heading is present regardless of state
@@ -45,7 +67,7 @@ test.describe('Sessions', () => {
       await page.goto('/');
 
       // Assert - Loading indicator should appear initially
-      const loadingText = page.getByText('Loading sessions...');
+      const loadingText = page.getByText(SELECTORS.LOADING_TEXT);
 
       // Loading text might be visible briefly
       // We check if it exists in the page (even if it disappears quickly)
@@ -61,11 +83,16 @@ test.describe('Sessions', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      // Wait for sessions to potentially load
-      await page.waitForTimeout(2000);
+      // Wait for session buttons to appear or timeout gracefully
+      await page.getByRole('button', { name: SELECTORS.SESSION_BUTTON })
+        .first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // Assert - Check if session buttons exist
-      const sessionButtons = page.getByRole('button', { name: /Select session/ });
+      const sessionButtons = page.getByRole('button', { name: SELECTORS.SESSION_BUTTON });
       const count = await sessionButtons.count();
 
       // If there are sessions, they should be displayed
@@ -80,11 +107,15 @@ test.describe('Sessions', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      // Wait for potential session data to load
-      await page.waitForTimeout(2000);
+      // Wait for session buttons to appear or timeout gracefully
+      const sessionButtons = page.getByRole('button', { name: SELECTORS.SESSION_BUTTON });
+      await sessionButtons.first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // Act - Try to find and click the first session button
-      const sessionButtons = page.getByRole('button', { name: /Select session/ });
       const firstSessionButton = sessionButtons.first();
 
       // Check if any sessions are available
@@ -115,11 +146,15 @@ test.describe('Sessions', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      // Wait for potential session data
-      await page.waitForTimeout(2000);
+      // Wait for session buttons to appear or timeout gracefully
+      const sessionButtons = page.getByRole('button', { name: SELECTORS.SESSION_BUTTON });
+      await sessionButtons.first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // Act - Find first available session and click it
-      const sessionButtons = page.getByRole('button', { name: /Select session/ });
       const sessionCount = await sessionButtons.count();
 
       if (sessionCount > 0) {
@@ -148,10 +183,16 @@ test.describe('Sessions', () => {
       // Arrange
       await page.goto('/');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(2000);
+
+      // Wait for session buttons to appear or timeout gracefully
+      const sessionButtons = page.getByRole('button', { name: SELECTORS.SESSION_BUTTON });
+      await sessionButtons.first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // Act - Check if session buttons have proper ARIA labels
-      const sessionButtons = page.getByRole('button', { name: /Select session/ });
       const sessionCount = await sessionButtons.count();
 
       if (sessionCount > 0) {
@@ -176,10 +217,16 @@ test.describe('Sessions', () => {
       // Arrange
       await page.goto('/');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(2000);
+
+      // Wait for session buttons to appear or timeout gracefully
+      const sessionButtons = page.getByRole('button', { name: SELECTORS.SESSION_BUTTON });
+      await sessionButtons.first()
+        .waitFor({ state: 'visible', timeout: TIMEOUTS.SESSION_LOAD })
+        .catch(() => {
+          // Gracefully handle case where no sessions are available
+        });
 
       // Act - Use keyboard to interact with sessions
-      const sessionButtons = page.getByRole('button', { name: /Select session/ });
       const sessionCount = await sessionButtons.count();
 
       if (sessionCount > 0) {
@@ -202,7 +249,7 @@ test.describe('Sessions', () => {
   test.describe('Session List Error Handling', () => {
     test('should display error message when session loading fails', async ({ page }) => {
       // Arrange - Mock the API to return an error
-      await page.route('**/api/sessions', route => {
+      await page.route(ENDPOINTS.SESSIONS, route => {
         route.fulfill({
           status: 500,
           contentType: 'application/json',
@@ -215,13 +262,13 @@ test.describe('Sessions', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Error message should be displayed
-      const errorMessage = page.getByText(/Error loading sessions/);
+      const errorMessage = page.getByText(SELECTORS.ERROR_TEXT);
       await expect(errorMessage).toBeVisible();
     });
 
     test('should display empty state when no sessions are available', async ({ page }) => {
       // Arrange - Mock the API to return empty array
-      await page.route('**/api/sessions', route => {
+      await page.route(ENDPOINTS.SESSIONS, route => {
         route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -234,7 +281,7 @@ test.describe('Sessions', () => {
       await page.waitForLoadState('networkidle');
 
       // Assert - Empty state message should be displayed
-      const emptyMessage = page.getByText('No sessions available');
+      const emptyMessage = page.getByText(SELECTORS.EMPTY_STATE_TEXT);
       await expect(emptyMessage).toBeVisible();
     });
   });
