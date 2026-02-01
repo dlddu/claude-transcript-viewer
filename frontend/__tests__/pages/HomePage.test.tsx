@@ -16,7 +16,7 @@ describe('HomePage Component', () => {
     expect(container).toBeTruthy();
   });
 
-  it('should display "Home" text', () => {
+  it('should display "Sessions" heading', () => {
     // Arrange & Act
     render(
       <BrowserRouter>
@@ -25,8 +25,8 @@ describe('HomePage Component', () => {
     );
 
     // Assert
-    const homeText = screen.getByText(/home/i);
-    expect(homeText).toBeInTheDocument();
+    const sessionsHeading = screen.getByRole('heading', { name: /sessions/i });
+    expect(sessionsHeading).toBeInTheDocument();
   });
 
   it('should render home page heading', () => {
@@ -67,7 +67,7 @@ describe('HomePage Component', () => {
     expect(pageContainer).toBeInTheDocument();
   });
 
-  it('should display welcome or introduction content', () => {
+  it('should display SessionList component', () => {
     // Arrange & Act
     render(
       <BrowserRouter>
@@ -76,7 +76,7 @@ describe('HomePage Component', () => {
     );
 
     // Assert
-    const content = screen.getByText(/home/i);
-    expect(content).toBeInTheDocument();
+    const sessionsHeading = screen.getByRole('heading', { name: /sessions/i });
+    expect(sessionsHeading).toBeInTheDocument();
   });
 });

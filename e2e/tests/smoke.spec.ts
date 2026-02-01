@@ -26,8 +26,8 @@ test.describe('Smoke Tests', () => {
       await page.goto('/');
 
       // Assert - Check for key UI elements
-      const welcomeText = page.getByText('Welcome to Claude Transcript Viewer');
-      await expect(welcomeText).toBeVisible();
+      const sessionsHeading = page.getByRole('heading', { name: /sessions/i });
+      await expect(sessionsHeading).toBeVisible();
     });
 
     test('should have valid HTML structure', async ({ page }) => {

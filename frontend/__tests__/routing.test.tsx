@@ -19,7 +19,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert
-    expect(screen.getByText(/home/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sessions/i })).toBeInTheDocument();
   });
 
   it('should render SessionPage at "/session/:sessionId" path', () => {
@@ -82,7 +82,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert
-    const homePage = screen.getByText(/home/i);
+    const homePage = screen.getByRole('heading', { name: /sessions/i });
     expect(homePage).toBeInTheDocument();
   });
 
@@ -168,7 +168,7 @@ describe('Routing Integration', () => {
     // Assert
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByText(/home/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sessions/i })).toBeInTheDocument();
   });
 
   it('should navigate between HomePage and SessionPage', () => {
@@ -185,7 +185,7 @@ describe('Routing Integration', () => {
     );
 
     // Assert - HomePage
-    expect(screen.getByText(/home/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /sessions/i })).toBeInTheDocument();
 
     // Cleanup
     unmount();

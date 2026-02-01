@@ -14,8 +14,8 @@ test.describe('Claude Transcript Viewer E2E', () => {
     await page.goto('/');
 
     // Assert
-    const welcomeText = page.getByText('Welcome to Claude Transcript Viewer');
-    await expect(welcomeText).toBeVisible();
+    const sessionsHeading = page.getByRole('heading', { name: /sessions/i });
+    await expect(sessionsHeading).toBeVisible();
   });
 
   test('should display Home heading on home page', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe('Claude Transcript Viewer E2E', () => {
     await page.goto('/');
 
     // Assert
-    const heading = page.getByRole('heading', { name: 'Home' });
+    const heading = page.getByRole('heading', { name: /sessions/i });
     await expect(heading).toBeVisible();
   });
 
