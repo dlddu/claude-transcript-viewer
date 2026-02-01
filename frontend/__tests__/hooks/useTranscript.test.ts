@@ -24,7 +24,7 @@ describe('useTranscript hook', () => {
                 resolve({
                   ok: true,
                   status: 200,
-                  json: async () => [],
+                  json: async () => ({ sessionId, records: [] }),
                 }),
               100
             )
@@ -43,7 +43,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
 
       const { result } = renderHook(() => useTranscript(sessionId));
@@ -69,7 +69,7 @@ describe('useTranscript hook', () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => mockTranscript,
+        json: async () => ({ sessionId, records: mockTranscript }),
       });
       global.fetch = mockFetch;
 
@@ -104,7 +104,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => mockTranscript,
+        json: async () => ({ sessionId, records: mockTranscript }),
       });
 
       const { result } = renderHook(() => useTranscript(sessionId));
@@ -122,7 +122,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
 
       const { result } = renderHook(() => useTranscript(sessionId));
@@ -180,7 +180,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => mockTranscript,
+        json: async () => ({ sessionId, records: mockTranscript }),
       });
 
       const { result } = renderHook(() => useTranscript(sessionId));
@@ -207,7 +207,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => mockTranscript,
+        json: async () => ({ sessionId, records: mockTranscript }),
       });
 
       const { result } = renderHook(() => useTranscript(sessionId));
@@ -310,12 +310,12 @@ describe('useTranscript hook', () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          json: async () => initialTranscript,
+          json: async () => ({ sessionId, records: initialTranscript }),
         })
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          json: async () => updatedTranscript,
+          json: async () => ({ sessionId, records: updatedTranscript }),
         });
       global.fetch = mockFetch;
 
@@ -343,7 +343,7 @@ describe('useTranscript hook', () => {
                 resolve({
                   ok: true,
                   status: 200,
-                  json: async () => [],
+                  json: async () => ({ sessionId, records: [] }),
                 }),
               50
             )
@@ -372,13 +372,16 @@ describe('useTranscript hook', () => {
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
-          json: async () => [
-            {
-              type: 'user',
-              message: { role: 'user', content: [] },
-              timestamp: '2024-01-29T10:00:00Z',
-            },
-          ],
+          json: async () => ({
+            sessionId,
+            records: [
+              {
+                type: 'user',
+                message: { role: 'user', content: [] },
+                timestamp: '2024-01-29T10:00:00Z',
+              },
+            ],
+          }),
         })
         .mockRejectedValueOnce(new Error('Refetch failed'));
       global.fetch = mockFetch;
@@ -404,7 +407,7 @@ describe('useTranscript hook', () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
       global.fetch = mockFetch;
 
@@ -418,10 +421,13 @@ describe('useTranscript hook', () => {
     it('should refetch when sessionId changes', async () => {
       const sessionId1 = 'session-123';
       const sessionId2 = 'session-456';
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: async () => [],
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        const id = url.split('/').pop();
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ sessionId: id, records: [] }),
+        });
       });
       global.fetch = mockFetch;
 
@@ -447,7 +453,7 @@ describe('useTranscript hook', () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
       global.fetch = mockFetch;
 
@@ -469,7 +475,7 @@ describe('useTranscript hook', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
 
       renderHook(() => useTranscript(sessionId));
@@ -484,7 +490,7 @@ describe('useTranscript hook', () => {
       const mockFetch = vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => [],
+        json: async () => ({ sessionId, records: [] }),
       });
       global.fetch = mockFetch;
 
